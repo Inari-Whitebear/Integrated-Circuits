@@ -20,7 +20,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class BlockAssembler extends Block {
+public class BlockAssembler extends BlockContainer {
 	public BlockAssembler() {
 		super(Material.IRON);
 		setUnlocalizedName(Constants.MOD_ID + ".assembler");
@@ -30,14 +30,14 @@ public class BlockAssembler extends Block {
 	}
 
 	@Override
-	public boolean onBlockActivated(World world, BlockPos blockPos, IBlockState blockState, EntityPlayer player, EnumHand hand, ItemStack item, EnumFacing side, float p_onBlockActivated_8_, float p_onBlockActivated_9_, float p_onBlockActivated_10_) {
+	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, ItemStack item, EnumFacing side, float p_onBlockActivated_8_, float p_onBlockActivated_9_, float p_onBlockActivated_10_) { // Are the last three args (float hitX, float hitY, float hitZ)?
 		if (!world.isRemote)
-			player.openGui(IntegratedCircuits.instance, 1, world, blockPos.getX(), blockPos.getY(), blockPos.getZ());
+			player.openGui(IntegratedCircuits.instance, 1, world, pos.getX(), pos.getY(), pos.getZ());
 		return false;
 	}
-
+	
 	@Override
-	public TileEntity createTileEntity(World world, IBlockState state) {
+	public TileEntity createNewTileEntity(World world, int meta) {
 		return new TileEntityAssembler();
 	}
 
@@ -80,38 +80,38 @@ public class BlockAssembler extends Block {
 	}*/
 
 	@Override
-	public void onBlockPlacedBy(World world, BlockPos blockPos, IBlockState blockState, EntityLivingBase entity, ItemStack stack) {
+	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase entity, ItemStack stack) {
 		int rotation = MathHelper.floor_double((double) (entity.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
-		TileEntityAssembler te = (TileEntityAssembler) world.getTileEntity(blockPos);
+		TileEntityAssembler te = (TileEntityAssembler) world.getTileEntity(pos);
 		if (te != null)
-			te.rotation = rotation;
+			te.rotation.rotateAround(EnumFacing.Axis.Y);
 	}
 
 	@Override
-	public void breakBlock(World world, BlockPos blockPos, IBlockState blockState) {
-		TileEntityAssembler te = (TileEntityAssembler) world.getTileEntity(blockPos);
+	public void breakBlock(World world, BlockPos pos, IBlockState state) {
+		TileEntityAssembler te = (TileEntityAssembler) world.getTileEntity(pos);
 		te.dropContents();
 	}
 
 	@Override
-	public void onNeighborBlockChange(World world, BlockPos blockPos, IBlockState blockState, Block block) {
-		TileEntityAssembler te = (TileEntityAssembler) world.getTileEntity(blockPos);
+	public void onNeighborBlockChange(World world, BlockPos pos, IBlockState state, Block block) {
+		TileEntityAssembler te = (TileEntityAssembler) world.getTileEntity(pos);
 		te.onNeighborBlockChange();
 	}
 
 	@Override
-	public int getWeakPower(IBlockState blockState, IBlockAccess world, BlockPos blockPos, EnumFacing side) {
-		return getStrongPower(blockState, world, blockPos, side);
+	public int getWeakPower(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side) {
+		return getStrongPower(state, world, pos, side);
 	}
 
 	@Override
-	public int getStrongPower(IBlockState blockState, IBlockAccess world, BlockPos blockPos, EnumFacing side) {
-		TileEntityAssembler te = (TileEntityAssembler) world.getTileEntity(blockPos);
+	public int getStrongPower(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side) {
+		TileEntityAssembler te = (TileEntityAssembler) world.getTileEntity(pos);
 		return te.isProvidingPower();
 	}
 
 	@Override
-	public boolean isSideSolid(IBlockState blockState, IBlockAccess world, BlockPos blockPos, EnumFacing side) {
+	public boolean isSideSolid(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side) {
 		return true;
 	}
 
@@ -121,17 +121,17 @@ public class BlockAssembler extends Block {
 	}
 
 	@Override
-	public boolean canConnectRedstone(IBlockState blockState, IBlockAccess world, BlockPos blockPos, EnumFacing side) {
-		return true; // TODO check was side != -1... find out what -1 meant previosuly and fix it
+	public boolean canConnectRedstone(IBlockState blockState, IBlockAccess world, BlockPos pos, EnumFacing side) {
+		return side != EnumFacing.DOWN;
 	}
 
 	@Override
-	public boolean rotateBlock(World world, BlockPos blockPos, EnumFacing axis) {
-		return ((TileEntityAssembler) world.getTileEntity(blockPos)).rotate();
+	public boolean rotateBlock(World world, BlockPos pos, EnumFacing axis) {
+		return ((TileEntityAssembler) world.getTileEntity(pos)).rotate();
 	}
 
 	@Override
-	public boolean isOpaqueCube(IBlockState blockState) {
+	public boolean isOpaqueCube(IBlockState state) {
 		return false;
 	}
 /*
