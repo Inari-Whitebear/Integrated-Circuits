@@ -12,17 +12,19 @@ import net.minecraft.network.PacketBuffer;
 import codechicken.lib.data.MCDataInput;
 import codechicken.lib.packet.PacketCustom;
 import codechicken.lib.vec.BlockCoord;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 
 public class PacketDataStream extends PacketTileEntity<PacketDataStream> {
 	private MCDataInput in;
 	private MCDataOutputImpl out;
-	private int side;
+	private EnumFacing side;
 
 	public PacketDataStream() {
 	}
 
-	public PacketDataStream(MCDataOutputImpl out, int x, int y, int z, int side) {
+	public PacketDataStream(MCDataOutputImpl out, int x, int y, int z, EnumFacing side) {
 		super(x, y, z);
 		this.out = out;
 		this.side = side;
@@ -47,8 +49,8 @@ public class PacketDataStream extends PacketTileEntity<PacketDataStream> {
 	}
 
 	@Override
-	public void process(EntityPlayer player, Side side) {
-		ISocket socket = IntegratedCircuitsAPI.getSocketAt(player.worldObj, new BlockCoord(xCoord, yCoord, zCoord),
+	public void process(EntityPlayer player, EnumFacing side) {
+		ISocket socket = IntegratedCircuitsAPI.getSocketAt(player.worldObj, new BlockPos(xCoord, yCoord, zCoord),
 				this.side);
 		if (socket == null)
 			return;

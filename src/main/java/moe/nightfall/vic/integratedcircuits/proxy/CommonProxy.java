@@ -153,9 +153,10 @@ public class CommonProxy {
 	}
 
 	private static class SidedBlockCoord {
-		public int x, y, z, side;
+		public int x, y, z;
+		public EnumFacing side;
 
-		public SidedBlockCoord(int x, int y, int z, int side) {
+		public SidedBlockCoord(int x, int y, int z, EnumFacing side) {
 			this.x = x;
 			this.y = y;
 			this.z = z;
@@ -196,7 +197,8 @@ public class CommonProxy {
 					new ClickEvent(ClickEvent.Action.OPEN_URL, "https://github.com/Victorious3/Integrated-Circuits"));
 			text.appendSibling(url);
 			text.appendText(" repo.");
-			if (event.player.canCommandSenderUseCommand(MinecraftServer.getServer().getOpPermissionLevel(), null))
+
+			if (event.player.canCommandSenderUseCommand(event.player.getEntityWorld().getMinecraftServer().getOpPermissionLevel(), null))
 				text.appendText(" You can disable this message by changing the config file. Thanks for your attention.");
 			event.player.addChatComponentMessage(text);
 		}
