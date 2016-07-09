@@ -2,18 +2,18 @@ package moe.nightfall.vic.integratedcircuits.cp.part.latch;
 
 import java.util.ArrayList;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import moe.nightfall.vic.integratedcircuits.misc.Vec2i;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import moe.nightfall.vic.integratedcircuits.cp.CircuitPartRenderer;
 import moe.nightfall.vic.integratedcircuits.cp.ICircuit;
 import moe.nightfall.vic.integratedcircuits.cp.part.PartCPGate;
-import moe.nightfall.vic.integratedcircuits.misc.Vec2;
 import moe.nightfall.vic.integratedcircuits.misc.PropertyStitcher.IntProperty;
 import moe.nightfall.vic.integratedcircuits.misc.PropertyStitcher.BooleanProperty;
 import moe.nightfall.vic.integratedcircuits.tile.TileEntityCAD;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraftforge.common.util.ForgeDirection;
 
 public class PartRSLatch extends PartCPGate {
 	public final IntProperty PROP_STATE = new IntProperty("STATE", stitcher, 2);
@@ -21,7 +21,7 @@ public class PartRSLatch extends PartCPGate {
 	public final IntProperty PROP_MODE = new IntProperty("MODE", stitcher, 3);
 
 	@Override
-	public void onClick(Vec2 pos, ICircuit parent, int button, boolean ctrl) {
+	public void onClick(Vec2i pos, ICircuit parent, int button, boolean ctrl) {
 		super.onClick(pos, parent, button, ctrl);
 		if (button == 0 && ctrl) {
 			cycleProperty(pos, parent, PROP_MODE);
@@ -30,23 +30,23 @@ public class PartRSLatch extends PartCPGate {
 		}
 	}
 
-	private boolean isMirrored(Vec2 pos, ICircuit parent) {
+	private boolean isMirrored(Vec2i pos, ICircuit parent) {
 		return (getProperty(pos, parent, PROP_MODE) & 2) != 0;
 	}
 
-	private boolean isSpecial(Vec2 pos, ICircuit parent) {
+	private boolean isSpecial(Vec2i pos, ICircuit parent) {
 		return (getProperty(pos, parent, PROP_MODE) & 1) != 0;
 	}
 
 	@Override
-	public void onInputChange(Vec2 pos, ICircuit parent) {
+	public void onInputChange(Vec2i pos, ICircuit parent) {
 		scheduleTick(pos, parent);
 		// A bit of wire-like behavior, for the second mode
 		if (isSpecial(pos, parent)) {
 			if (getProperty(pos, parent, PROP_CHECK))
 				return;
 			int st = getProperty(pos, parent, PROP_STATE);
-			ForgeDirection s1 = toExternal(pos, parent, ForgeDirection.NORTH);
+			EnumFacing s1 = toExternal(pos, parent, EnumFacing.NORTH);
 			boolean in1 = getInputFromSide(pos, parent, s1);
 			boolean in2 = getInputFromSide(pos, parent, s1.getOpposite());
 			if ((st != 2 && !in1 && in2) || (st == 2 && !in2 && in1)) {
@@ -59,8 +59,8 @@ public class PartRSLatch extends PartCPGate {
 	}
 
 	@Override
-	public void onScheduledTick(Vec2 pos, ICircuit parent) {
-		ForgeDirection s1 = toExternal(pos, parent, ForgeDirection.NORTH);
+	public void onScheduledTick(Vec2i pos, ICircuit parent) {
+		EnumFacing s1 = toExternal(pos, parent, EnumFacing.NORTH);
 		boolean in1 = getInputFromSide(pos, parent, s1);
 		boolean in2 = getInputFromSide(pos, parent, s1.getOpposite());
 		if (in1 != in2)
@@ -85,12 +85,12 @@ public class PartRSLatch extends PartCPGate {
 	}
 
 	@Override
-	public boolean getOutputToSide(Vec2 pos, ICircuit parent, ForgeDirection side) {
+	public boolean getOutputToSide(Vec2i pos, ICircuit parent, EnumFacing side) {
 		int state = getProperty(pos, parent, PROP_STATE);
-		ForgeDirection s2 = toInternal(pos, parent, side);
+		EnumFacing s2 = toInternal(pos, parent, side);
 		boolean special = isSpecial(pos, parent);
 		boolean mirrored = isMirrored(pos, parent);
-		if (s2 == ForgeDirection.NORTH) {
+		if (s2 == EnumFacing.NORTH) {
 			if (special && state != 2)
 				// A bit of wire-like behavior:
 				// Only output if we are not powered from the same side
@@ -101,16 +101,16 @@ public class PartRSLatch extends PartCPGate {
 		}
 		if (state == 0)
 			return false;
-		if (s2 == ForgeDirection.SOUTH) {
+		if (s2 == EnumFacing.SOUTH) {
 			if (special && state == 2)
 				return !getProperty(pos, parent, PROP_CHECK)
 						&& !getInputFromSide(pos, parent, side);
 			return false;
 		}
-		if (s2 == ForgeDirection.EAST) {
+		if (s2 == EnumFacing.EAST) {
 			return (state == 1) != mirrored;
 		}
-		if (s2 == ForgeDirection.WEST) {
+		if (s2 == EnumFacing.WEST) {
 			return (state == 1) == mirrored;
 		}
 		return false;
@@ -118,16 +118,16 @@ public class PartRSLatch extends PartCPGate {
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public Vec2 getTextureOffset(Vec2 pos, ICircuit parent, double x, double y, CircuitPartRenderer.EnumRenderType type) {
-		return new Vec2(7, 1);
+	public Vec2i getTextureOffset(Vec2i pos, ICircuit parent, double x, double y, CircuitPartRenderer.EnumRenderType type) {
+		return new Vec2i(7, 1);
 	}
 
 	@Override
-	public ArrayList<String> getInformation(Vec2 pos, ICircuit parent, boolean edit, boolean ctrlDown) {
+	public ArrayList<String> getInformation(Vec2i pos, ICircuit parent, boolean edit, boolean ctrlDown) {
 		ArrayList<String> text = super.getInformation(pos, parent, edit, ctrlDown);
 		text.add(I18n.format("part.integratedcircuits.rslatch.mode") + ": " + (isSpecial(pos, parent) ? 1 : 0));
 		if (isMirrored(pos, parent))
-			text.add(EnumChatFormatting.ITALIC + I18n.format("part.integratedcircuits.rslatch.mirrored"));
+			text.add(TextFormatting.ITALIC + I18n.format("part.integratedcircuits.rslatch.mirrored"));
 		if (edit && ctrlDown)
 			text.add(I18n.format("gui.integratedcircuits.cad.mode"));
 		return text;

@@ -41,14 +41,14 @@ import moe.nightfall.vic.integratedcircuits.misc.PropertyStitcher;
 import moe.nightfall.vic.integratedcircuits.misc.PropertyStitcher.IProperty;
 import moe.nightfall.vic.integratedcircuits.misc.PropertyStitcher.IntProperty;
 import moe.nightfall.vic.integratedcircuits.misc.PropertyStitcher.ValueProperty;
-import moe.nightfall.vic.integratedcircuits.misc.Vec2;
+import moe.nightfall.vic.integratedcircuits.misc.Vec2i;
 import net.minecraft.client.resources.I18n;
-import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraft.util.EnumFacing;
 
 import com.google.common.collect.Lists;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public abstract class CircuitPart {
 	private static HashMap<Integer, CircuitPart> partRegistry = new HashMap<Integer, CircuitPart>();
@@ -143,79 +143,79 @@ public abstract class CircuitPart {
 		return parts;
 	}
 
-	public final <T extends Comparable> void setProperty(Vec2 pos, ICircuit parent, IProperty<T> property, T value) {
+	public final <T extends Comparable> void setProperty(Vec2i pos, ICircuit parent, IProperty<T> property, T value) {
 		setState(pos, parent, property.set(value, getState(pos, parent)));
 	}
 
-	public final <T extends Comparable> T getProperty(Vec2 pos, ICircuit parent, IProperty<T> property) {
+	public final <T extends Comparable> T getProperty(Vec2i pos, ICircuit parent, IProperty<T> property) {
 		return property.get(getState(pos, parent));
 	}
 
-	public final <T extends Comparable> T invertProperty(Vec2 pos, ICircuit parent, IProperty<T> property) {
+	public final <T extends Comparable> T invertProperty(Vec2i pos, ICircuit parent, IProperty<T> property) {
 		int state = getState(pos, parent);
 		state = property.invert(state);
 		setState(pos, parent, state);
 		return property.get(state);
 	}
 
-	public final void cycleProperty(Vec2 pos, ICircuit parent, ValueProperty property, int offset) {
+	public final void cycleProperty(Vec2i pos, ICircuit parent, ValueProperty property, int offset) {
 		int value = (Integer) property.get(getState(pos, parent));
 		value = (value + offset) % (property.getLimit() + 1);
 		setProperty(pos, parent, property, value);
 	}
 
-	public final void cycleProperty(Vec2 pos, ICircuit parent, ValueProperty property) {
+	public final void cycleProperty(Vec2i pos, ICircuit parent, ValueProperty property) {
 		cycleProperty(pos, parent, property, 1);
 	}
 
-	public void onPlaced(Vec2 pos, ICircuit parent) {
+	public void onPlaced(Vec2i pos, ICircuit parent) {
 		scheduleInputChange(pos, parent);
 		notifyNeighbours(pos, parent);
 	}
 
-	public void onScheduledTick(Vec2 pos, ICircuit parent) {
+	public void onScheduledTick(Vec2i pos, ICircuit parent) {
 	}
 
-	public final void scheduleTick(Vec2 pos, ICircuit parent) {
+	public final void scheduleTick(Vec2i pos, ICircuit parent) {
 		parent.getCircuitData().scheduleTick(pos);
 	}
 
-	public final void markForUpdate(Vec2 pos, ICircuit parent) {
+	public final void markForUpdate(Vec2i pos, ICircuit parent) {
 		parent.getCircuitData().markForUpdate(pos);
 	}
 
-	public void onClick(Vec2 pos, ICircuit parent, int button, boolean ctrl) {
+	public void onClick(Vec2i pos, ICircuit parent, int button, boolean ctrl) {
 	}
 
-	public String getName(Vec2 pos, ICircuit parent) {
+	public String getName(Vec2i pos, ICircuit parent) {
 		return getClass().getSimpleName().substring(4).toLowerCase();
 	}
 
-	public String getLocalizedName(Vec2 pos, ICircuit parent) {
+	public String getLocalizedName(Vec2i pos, ICircuit parent) {
 		return I18n.format("part." + Constants.MOD_ID + "." + getName(pos, parent) + ".name");
 	}
 
-	public ArrayList<String> getInformation(Vec2 pos, ICircuit parent, boolean edit, boolean ctrlDown) {
+	public ArrayList<String> getInformation(Vec2i pos, ICircuit parent, boolean edit, boolean ctrlDown) {
 		return Lists.newArrayList();
 	}
 
-	public void getCraftingCost(CraftingAmount amount, CircuitData parent, Vec2 pos) {
+	public void getCraftingCost(CraftingAmount amount, CircuitData parent, Vec2i pos) {
 	}
 
-	public final int getState(Vec2 pos, ICircuit parent) {
+	public final int getState(Vec2i pos, ICircuit parent) {
 		return parent.getCircuitData().getMeta(pos);
 	}
 
-	public final void setState(Vec2 pos, ICircuit parent, int state) {
+	public final void setState(Vec2i pos, ICircuit parent, int state) {
 		parent.getCircuitData().setMeta(pos, state);
 	}
 
-	public boolean canConnectToSide(Vec2 pos, ICircuit parent, ForgeDirection side) {
+	public boolean canConnectToSide(Vec2i pos, ICircuit parent, EnumFacing side) {
 		return true;
 	}
 
-	public final boolean hasConnectionOnSide(Vec2 pos, ICircuit parent, ForgeDirection side) {
-		if (side == ForgeDirection.UNKNOWN)
+	public final boolean hasConnectionOnSide(Vec2i pos, ICircuit parent, EnumFacing side) {
+		if (side == null)
 			return false;
 		CircuitPart neighbour = getNeighbourOnSide(pos, parent, side);
 		if (neighbour == null)
@@ -224,8 +224,8 @@ public abstract class CircuitPart {
 			&& neighbour.canConnectToSide(pos.offset(side), parent, side.getOpposite());
 	}
 
-	public final boolean getInputFromSide(Vec2 pos, ICircuit parent, ForgeDirection side) {
-		if (side == ForgeDirection.UNKNOWN)
+	public final boolean getInputFromSide(Vec2i pos, ICircuit parent, EnumFacing side) {
+		if (side == null)
 			return false;
 		boolean in = (getProperty(pos, parent, PROP_INPUT) << (side.ordinal() - 2) & 8) != 0;
 		return in;
@@ -234,20 +234,20 @@ public abstract class CircuitPart {
 	/** Handles input changes. Should only implement wire-like behavior.
 	 *  Don't call it directly! Use scheduleInputChange() instead!
 	 */
-	public void onInputChange(Vec2 pos, ICircuit parent) {
+	public void onInputChange(Vec2i pos, ICircuit parent) {
 	}
 
 	/** Puts a gate into queue to call its onInputChange() later. */
-	public void scheduleInputChange(Vec2 pos, ICircuit parent) {
+	public void scheduleInputChange(Vec2i pos, ICircuit parent) {
 		parent.getCircuitData().scheduleInputChange(pos);
 		markForUpdate(pos, parent);
 	}
 
 	/** Check every side to update the internal buffer **/
-	public final void updateInput(Vec2 pos, ICircuit parent) {
+	public final void updateInput(Vec2i pos, ICircuit parent) {
 		int input = 0;
 		for (int i = 2; i < 6; i++) {
-			ForgeDirection fd = ForgeDirection.getOrientation(i);
+			EnumFacing fd = EnumFacing.getFront(i);
 			if (hasConnectionOnSide(pos, parent, fd) && getNeighbourOnSide(pos, parent, fd)
 					.getOutputToSide(pos.offset(fd), parent, fd.getOpposite()))
 				input |= 8 >> (i - 2);
@@ -255,18 +255,18 @@ public abstract class CircuitPart {
 		setProperty(pos, parent, PROP_INPUT, input);
 	}
 
-	public boolean getOutputToSide(Vec2 pos, ICircuit parent, ForgeDirection side) {
+	public boolean getOutputToSide(Vec2i pos, ICircuit parent, EnumFacing side) {
 		return false;
 	}
 
-	public final void notifyNeighbours(Vec2 pos, ICircuit parent) {
+	public final void notifyNeighbours(Vec2i pos, ICircuit parent) {
 		for (int i = 2; i < 6; i++) {
-			ForgeDirection fd = ForgeDirection.getOrientation(i);
+			EnumFacing fd = EnumFacing.getFront(i);
 			CircuitPart part = getNeighbourOnSide(pos, parent, fd);
 
 			if (part != null) {
-				ForgeDirection fd2 = fd.getOpposite();
-				Vec2 pos2 = pos.offset(fd);
+				EnumFacing fd2 = fd.getOpposite();
+				Vec2i pos2 = pos.offset(fd);
 				if ((hasConnectionOnSide(pos, parent, fd) && getOutputToSide(pos, parent, fd))
 						!= part.getInputFromSide(pos2, parent, fd2))
 					part.scheduleInputChange(pos2, parent);
@@ -275,28 +275,28 @@ public abstract class CircuitPart {
 		markForUpdate(pos, parent);
 	}
 
-	public final CircuitPart getNeighbourOnSide(Vec2 pos, ICircuit parent, ForgeDirection side) {
+	public final CircuitPart getNeighbourOnSide(Vec2i pos, ICircuit parent, EnumFacing side) {
 		return parent.getCircuitData().getPart(pos.offset(side));
 	}
 
-	public final boolean getInput(Vec2 pos, ICircuit parent) {
-		return getInputFromSide(pos, parent, ForgeDirection.NORTH)
-				|| getInputFromSide(pos, parent, ForgeDirection.EAST)
-				|| getInputFromSide(pos, parent, ForgeDirection.SOUTH)
-				|| getInputFromSide(pos, parent, ForgeDirection.WEST);
+	public final boolean getInput(Vec2i pos, ICircuit parent) {
+		return getInputFromSide(pos, parent, EnumFacing.NORTH)
+				|| getInputFromSide(pos, parent, EnumFacing.EAST)
+				|| getInputFromSide(pos, parent, EnumFacing.SOUTH)
+				|| getInputFromSide(pos, parent, EnumFacing.WEST);
 	}
 
 	@SideOnly(Side.CLIENT)
-	public abstract void renderPart(Vec2 pos, ICircuit parent, double x, double y, CircuitPartRenderer.EnumRenderType type);
+	public abstract void renderPart(Vec2i pos, ICircuit parent, double x, double y, CircuitPartRenderer.EnumRenderType type);
 
 	/** Gets called on a client update */
-	public void onChanged(Vec2 pos, ICircuit parent, int oldMeta) {
+	public void onChanged(Vec2i pos, ICircuit parent, int oldMeta) {
 		scheduleInputChange(pos, parent);
 		notifyNeighbours(pos, parent);
 	}
 
 	/** Gets called when the client removes this */
-	public void onRemoved(Vec2 pos, ICircuit parent) {
+	public void onRemoved(Vec2i pos, ICircuit parent) {
 	}
 
 	/**

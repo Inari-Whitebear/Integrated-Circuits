@@ -3,15 +3,15 @@ package moe.nightfall.vic.integratedcircuits.misc;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import org.lwjgl.opengl.ARBFramebufferObject;
 import org.lwjgl.opengl.EXTFramebufferObject;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
-import codechicken.lib.render.CCRenderState;
-import cpw.mods.fml.relauncher.ReflectionHelper;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import moe.nightfall.vic.integratedcircuits.client.Resources;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -69,16 +69,18 @@ public class RenderUtils {
 
 		applyColorIRGBA(color);
 
-		Tessellator tes = Tessellator.instance;
 		GL11.glEnable(GL11.GL_BLEND);
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
 
-		tes.startDrawingQuads();
-		tes.addVertex(x1, y2, 0);
-		tes.addVertex(x2, y2, 0);
-		tes.addVertex(x2, y1, 0);
-		tes.addVertex(x1, y1, 0);
-		tes.draw();
+		RenderManager rm = RenderManager.getInstance();
+		rm.startDrawQuads(DefaultVertexFormats.POSITION);
+
+
+		rm.addVertex(x1, y2, 0);
+		rm.addVertex(x2, y2, 0);
+		rm.addVertex(x2, y1, 0);
+		rm.addVertex(x1, y1, 0);
+		rm.draw();
 
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
 		GL11.glDisable(GL11.GL_BLEND);
@@ -102,7 +104,6 @@ public class RenderUtils {
 	}
 
 	public static void addLine(double x, double y, double x2, double y2, double linewidth) {
-		Tessellator tes = Tessellator.instance;
 		if (x > x2) {
 			double t = x2;
 			x2 = x;
@@ -119,47 +120,50 @@ public class RenderUtils {
 		double size = linewidth / 2D;
 		double ox = Math.sin(angle) * size;
 		double oy = Math.cos(angle) * size;
+		
+		RenderManager rm = RenderManager.getInstance();
+		rm.startDrawQuads(DefaultVertexFormats.POSITION);
 
-		tes.addVertex(x + ox, y - oy, 0);
-		tes.addVertex(x - ox, y + oy, 0);
-		tes.addVertex(x2 - ox, y2 + oy, 0);
-		tes.addVertex(x2 + ox, y2 - oy, 0);
+		rm.addVertex(x + ox, y - oy, 0);
+		rm.addVertex(x - ox, y + oy, 0);
+		rm.addVertex(x2 - ox, y2 + oy, 0);
+		rm.addVertex(x2 + ox, y2 - oy, 0);
 	}
 
-	public static void addBox(Tessellator tes, double x1, double y1, double z1, double w, double h, double d) {
+	public static void addBox(RenderManager rm, double x1, double y1, double z1, double w, double h, double d) {
 		double x2 = x1 + w;
 		double y2 = y1 + h;
 		double z2 = z1 + d;
 
-		tes.addVertex(x1, y2, z1);
-		tes.addVertex(x1, y2, z2);
-		tes.addVertex(x2, y2, z2);
-		tes.addVertex(x2, y2, z1);
+		rm.addVertex(x1, y2, z1);
+		rm.addVertex(x1, y2, z2);
+		rm.addVertex(x2, y2, z2);
+		rm.addVertex(x2, y2, z1);
 
-		tes.addVertex(x2, y1, z1);
-		tes.addVertex(x2, y1, z2);
-		tes.addVertex(x1, y1, z2);
-		tes.addVertex(x1, y1, z1);
+		rm.addVertex(x2, y1, z1);
+		rm.addVertex(x2, y1, z2);
+		rm.addVertex(x1, y1, z2);
+		rm.addVertex(x1, y1, z1);
 
-		tes.addVertex(x1, y1, z1);
-		tes.addVertex(x1, y2, z1);
-		tes.addVertex(x2, y2, z1);
-		tes.addVertex(x2, y1, z1);
+		rm.addVertex(x1, y1, z1);
+		rm.addVertex(x1, y2, z1);
+		rm.addVertex(x2, y2, z1);
+		rm.addVertex(x2, y1, z1);
 
-		tes.addVertex(x2, y1, z2);
-		tes.addVertex(x2, y2, z2);
-		tes.addVertex(x1, y2, z2);
-		tes.addVertex(x1, y1, z2);
+		rm.addVertex(x2, y1, z2);
+		rm.addVertex(x2, y2, z2);
+		rm.addVertex(x1, y2, z2);
+		rm.addVertex(x1, y1, z2);
 
-		tes.addVertex(x2, y1, z1);
-		tes.addVertex(x2, y2, z1);
-		tes.addVertex(x2, y2, z2);
-		tes.addVertex(x2, y1, z2);
+		rm.addVertex(x2, y1, z1);
+		rm.addVertex(x2, y2, z1);
+		rm.addVertex(x2, y2, z2);
+		rm.addVertex(x2, y1, z2);
 
-		tes.addVertex(x1, y1, z2);
-		tes.addVertex(x1, y2, z2);
-		tes.addVertex(x1, y2, z1);
-		tes.addVertex(x1, y1, z1);
+		rm.addVertex(x1, y1, z2);
+		rm.addVertex(x1, y2, z2);
+		rm.addVertex(x1, y2, z1);
+		rm.addVertex(x1, y1, z1);
 	}
 
 	public static void drawStringWithBorder(FontRenderer fr, String str, int x, int y, int color, int border) {
@@ -184,10 +188,10 @@ public class RenderUtils {
 
 		Minecraft.getMinecraft().renderEngine.bindTexture(Resources.RESOURCE_GUI_CONTROLS);
 		GL11.glColor4f(1, 1, 1, 1);
-		Gui.func_146110_a(0, 0, 0, 0, 4, 4, 32, 32);
-		Gui.func_146110_a(width - 4, 0, 4, 0, 4, 4, 32, 32);
-		Gui.func_146110_a(width - 4, height - 4, 4, 4, 4, 4, 32, 32);
-		Gui.func_146110_a(0, height - 4, 0, 4, 4, 4, 32, 32);
+		Gui.drawModalRectWithCustomSizedTexture(0, 0, 0, 0, 4, 4, 32, 32);
+		Gui.drawModalRectWithCustomSizedTexture(width - 4, 0, 4, 0, 4, 4, 32, 32);
+		Gui.drawModalRectWithCustomSizedTexture(width - 4, height - 4, 4, 4, 4, 4, 32, 32);
+		Gui.drawModalRectWithCustomSizedTexture(0, height - 4, 0, 4, 4, 4, 32, 32);
 		GL11.glTranslatef(-xOffset, -yOffset, 0);
 	}
 
@@ -199,14 +203,19 @@ public class RenderUtils {
 		return new int[] { red, blue, green, alpha };
 	}
 
-	public static void applyColorIRGBA(Tessellator tes, int arbg, float brightness) {
-		int[] rgba = componentsIRGBA(arbg);
-		tes.setColorRGBA((int) (rgba[0] * brightness), (int) (rgba[1] * brightness), (int) (rgba[2] * brightness), rgba[3]);
+	public static float[] componentsFRGBA(int arbg) {
+		int[] irgba = componentsIRGBA(arbg);
+		return new float[] {irgba[0] / 255.0f, irgba[1] / 255.0f, irgba[2] / 255.0f, irgba[3] / 255.0f};
 	}
 
-	public static void applyColorIRGBA(Tessellator tes, int arbg) {
-		int[] rgba = componentsIRGBA(arbg);
-		tes.setColorRGBA(rgba[0], rgba[1], rgba[2], rgba[3]);
+	public static void applyColorIRGBA(RenderManager rm, int arbg, float brightness) {
+		float[] rgba = componentsFRGBA(arbg);
+		rm.setColor((rgba[0] * brightness), (rgba[1] * brightness), (rgba[2] * brightness), rgba[3]);
+	}
+
+	public static void applyColorIRGBA(RenderManager rm, int arbg) {
+		float[] rgba = componentsFRGBA(arbg);
+		rm.setColor(rgba[0], rgba[1], rgba[2], rgba[3]);
 
 	}
 
@@ -223,7 +232,8 @@ public class RenderUtils {
 		float red = (float) (rbg >> 16 & 255) / 255.0F * brightness;
 		float blue = (float) (rbg >> 8 & 255) / 255.0F * brightness;
 		float green = (float) (rbg & 255) / 255.0F * brightness;
-		GL11.glColor4f(red, blue, green, (CCRenderState.alphaOverride > 0 ? CCRenderState.alphaOverride : 255) / 255F);
+		//GL11.glColor4f(red, blue, green, (CCRenderState.alphaOverride > 0 ? CCRenderState.alphaOverride : 255) / 255F); TODO reimplement
+		GL11.glColor4f(red, blue, green, 255 / 255F);
 	}
 
 	public static String cutStringToSize(FontRenderer fr, String str, int width) {

@@ -6,16 +6,16 @@ import java.util.List;
 import moe.nightfall.vic.integratedcircuits.client.gui.GuiInterfaces.IHoverable;
 import moe.nightfall.vic.integratedcircuits.client.gui.GuiInterfaces.IHoverableHandler;
 import moe.nightfall.vic.integratedcircuits.misc.MiscUtils;
-import moe.nightfall.vic.integratedcircuits.misc.Vec2;
+import moe.nightfall.vic.integratedcircuits.misc.Vec2i;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
-import cpw.mods.fml.client.config.GuiButtonExt;
+import net.minecraftforge.fml.client.config.GuiButtonExt;
 
 public class GuiStateLabel extends GuiButtonExt implements IHoverable {
-	private Vec2[] states;
+	private Vec2i[] states;
 	private String[] desc;
 	private int state;
 	private ResourceLocation loc;
@@ -27,7 +27,7 @@ public class GuiStateLabel extends GuiButtonExt implements IHoverable {
 		this.loc = loc;
 	}
 
-	public GuiStateLabel addState(Vec2... states) {
+	public GuiStateLabel addState(Vec2i... states) {
 		this.states = states;
 		return this;
 	}
@@ -57,7 +57,7 @@ public class GuiStateLabel extends GuiButtonExt implements IHoverable {
 			GL11.glColor3f(0.8F, 0.9F, 1F);
 		} else
 			GL11.glColor3f(1F, 1F, 1F);
-		Vec2 uv = states[state];
+		Vec2i uv = states[state];
 		mc.getTextureManager().bindTexture(loc);
 		drawTexturedModalRect(xPosition, yPosition, uv.x, uv.y, width, height);
 	}

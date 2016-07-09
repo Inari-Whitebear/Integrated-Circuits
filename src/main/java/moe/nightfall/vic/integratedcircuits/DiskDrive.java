@@ -6,18 +6,18 @@ import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import org.lwjgl.opengl.GL11;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 //TODO Rewrite!
 public class DiskDrive {
-	public static AxisAlignedBB getDiskDriveBoundingBox(IDiskDrive drive, int x, int y, int z, Vec3 hitVec) {
+	public static AxisAlignedBB getDiskDriveBoundingBox(IDiskDrive drive, int x, int y, int z, Vec3d hitVec) {
 		AxisAlignedBB box = drive.getBoundingBox();
 		box.offset(x, y, z);
 		if (!box.isVecInside(hitVec))
@@ -29,7 +29,7 @@ public class DiskDrive {
 		if (drive.getDisk() != null)
 			world.spawnEntityInWorld(new EntityItem(world, x, y, z, drive.getDisk()));
 	}
-
+/* FIXME 1.8+ rendering
 	@SideOnly(Side.CLIENT)
 	public static void renderFloppy(IDiskDrive drive, ModelFloppy model, double x, double y, double z,
 			float partialTicks, int rotation) {
@@ -76,7 +76,7 @@ public class DiskDrive {
 			floppy.addBox(minX, minY, minZ, maxX, maxY, maxZ);
 			floppy.setRotationPoint(8, 8, 8);
 		}
-	}
+	}*/
 
 	public interface IDiskDrive {
 		public AxisAlignedBB getBoundingBox();

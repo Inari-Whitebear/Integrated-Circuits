@@ -9,7 +9,7 @@ import moe.nightfall.vic.integratedcircuits.client.gui.component.GuiTextArea;
 import moe.nightfall.vic.integratedcircuits.cp.CircuitProperties.Comment;
 import moe.nightfall.vic.integratedcircuits.misc.MiscUtils;
 import moe.nightfall.vic.integratedcircuits.misc.RenderUtils;
-import moe.nightfall.vic.integratedcircuits.misc.Vec2;
+import moe.nightfall.vic.integratedcircuits.misc.Vec2i;
 import moe.nightfall.vic.integratedcircuits.net.pcb.PacketPCBComment;
 import moe.nightfall.vic.integratedcircuits.net.pcb.PacketPCBDeleteComment;
 import moe.nightfall.vic.integratedcircuits.proxy.CommonProxy;
@@ -27,7 +27,7 @@ public class CommentHandler extends CADHandler {
 	// private static Framebuffer fbo;
 
 	private Comment selectedComment;
-	private Map<Comment, Vec2> sizeCache = new WeakHashMap<Comment, Vec2>();
+	private Map<Comment, Vec2i> sizeCache = new WeakHashMap<Comment, Vec2i>();
 	public Mode mode = Mode.EDIT;
 
 	private GuiTextArea textArea = new GuiTextArea(0, 0)
@@ -63,7 +63,7 @@ public class CommentHandler extends CADHandler {
 		}
 	}
 
-	private Vec2 calculateSize(Comment comment) {
+	private Vec2i calculateSize(Comment comment) {
 		FontRenderer fr = Minecraft.getMinecraft().fontRenderer;
 		String[] text = MiscUtils.stringNewlineSplit(comment.text);
 		int width = 10;
@@ -73,11 +73,11 @@ public class CommentHandler extends CADHandler {
 			width = Math.max(width, fr.getStringWidth(text[i]));
 		}
 		width += 10;
-		return new Vec2(width, height);
+		return new Vec2i(width, height);
 	}
 
-	private Vec2 getSize(Comment comment) {
-		Vec2 size = sizeCache.get(comment);
+	private Vec2i getSize(Comment comment) {
+		Vec2i size = sizeCache.get(comment);
 		if (size == null) {
 			size = calculateSize(comment);
 			sizeCache.put(comment, size);
@@ -88,7 +88,7 @@ public class CommentHandler extends CADHandler {
 	private Comment getIntersecting(GuiCAD parent, double gridX, double gridY) {
 		Collection<Comment> comments = parent.getCircuitData().getProperties().getComments();
 		for (Comment comment : Lists.reverse(new ArrayList<Comment>(comments))) {
-			Vec2 size = getSize(comment);
+			Vec2i size = getSize(comment);
 
 			double x = comment.xPos;
 			double y = comment.yPos;
@@ -238,7 +238,7 @@ public class CommentHandler extends CADHandler {
 		int x = (int) (comment.xPos * 32D);
 		int y = (int) (comment.yPos * 32D);
 
-		Vec2 size = getSize(comment);
+		Vec2i size = getSize(comment);
 		Gui.drawRect(x, y, x + size.x, y + size.y, hovered || !isActive() || comment == selectedComment ? 0xFFFFFFFF : 0xAAFFFFFF);
 		fr.drawSplitString(MiscUtils.stringNormalizeLinefeed(comment.text), x + 5, y + 5, Integer.MAX_VALUE, 0xFF000000);
 		RenderUtils.drawBorder(x, y, size.x, size.y);
@@ -253,7 +253,7 @@ public class CommentHandler extends CADHandler {
 		GL11.glTranslatef(x, y, 0);
 		textArea.render(mx, my);
 		GL11.glPopMatrix();
-		Vec2 size = textArea.getSize();
+		Vec2i size = textArea.getSize();
 		RenderUtils.drawBorder(x, y, size.x, size.y);
 	}
 }

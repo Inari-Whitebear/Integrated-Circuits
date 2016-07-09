@@ -6,8 +6,7 @@ import moe.nightfall.vic.integratedcircuits.client.Resources;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.IIcon;
-import net.minecraft.util.StatCollector;
+import net.minecraft.util.text.translation.I18n;
 
 public class ItemPCB extends ItemBase {
 	public ItemPCB() {
@@ -26,15 +25,15 @@ public class ItemPCB extends ItemBase {
 	@Override
 	public String getItemStackDisplayName(ItemStack stack) {
 		if (stack.getItemDamage() == 0)
-			return StatCollector.translateToLocal((getUnlocalizedName() + ".name"));
+			return I18n.translateToLocal((getUnlocalizedName() + ".name"));
 		else
-			return StatCollector.translateToLocal((getUnlocalizedName() + ".printed.name"));
+			return I18n.translateToLocal((getUnlocalizedName() + ".printed.name"));
 	}
-
+/* FIXME 1.8+ rendering
 	@Override
 	public IIcon getIconFromDamage(int damage) {
 		if (damage == 0)
 			return Resources.ICON_PCB_RAW;
 		return Resources.ICON_PCB;
-	}
+	}*/
 }

@@ -9,8 +9,9 @@ import moe.nightfall.vic.integratedcircuits.tile.TileEntityCAD;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.PacketBuffer;
-import cpw.mods.fml.common.network.NetworkRegistry.TargetPoint;
-import cpw.mods.fml.relauncher.Side;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class PacketPCBSimulation extends PacketTileEntity<PacketPCBSimulation> {
 
@@ -41,14 +42,14 @@ public class PacketPCBSimulation extends PacketTileEntity<PacketPCBSimulation> {
 
 	@Override
 	public void process(EntityPlayer player, Side side) {
-		TileEntityCAD te = (TileEntityCAD) player.worldObj.getTileEntity(xCoord, yCoord, zCoord);
+		TileEntityCAD te = (TileEntityCAD) player.worldObj.getTileEntity(new BlockPos(xCoord, yCoord, zCoord));
 		if (te != null) {
 			te.setPausing(pausing);
 
 			if (side.isServer()) {
 				if (step)
 					te.step();
-				CommonProxy.networkWrapper.sendToAllAround(this, new TargetPoint(te.getWorldObj().provider.dimensionId,
+				CommonProxy.networkWrapper.sendToAllAround(this, new TargetPoint(te.getWorld().provider.getDimension(),
 						xCoord, yCoord, zCoord, 8));
 			} else if (Minecraft.getMinecraft().currentScreen instanceof GuiCAD)
 				((GuiCAD) Minecraft.getMinecraft().currentScreen).refreshUI();

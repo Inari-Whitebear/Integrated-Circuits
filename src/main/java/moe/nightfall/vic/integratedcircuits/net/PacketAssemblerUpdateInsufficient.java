@@ -7,7 +7,8 @@ import moe.nightfall.vic.integratedcircuits.tile.TileEntityAssembler;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
-import cpw.mods.fml.relauncher.Side;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class PacketAssemblerUpdateInsufficient extends PacketTileEntity<PacketAssemblerUpdateInsufficient> {
 	private ItemAmount insufficient;
@@ -34,7 +35,7 @@ public class PacketAssemblerUpdateInsufficient extends PacketTileEntity<PacketAs
 
 	@Override
 	public void process(EntityPlayer player, Side side) {
-		TileEntityAssembler te = (TileEntityAssembler) player.worldObj.getTileEntity(xCoord, yCoord, zCoord);
+		TileEntityAssembler te = (TileEntityAssembler) player.worldObj.getTileEntity(new BlockPos(xCoord, yCoord, zCoord));
 		if (te == null)
 			return;
 		te.craftingSupply.changeInsufficient(insufficient);

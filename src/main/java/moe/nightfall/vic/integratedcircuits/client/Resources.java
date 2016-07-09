@@ -1,20 +1,17 @@
 package moe.nightfall.vic.integratedcircuits.client;
 
 import moe.nightfall.vic.integratedcircuits.Constants;
-import net.minecraft.client.renderer.IconFlipped;
-import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.common.MinecraftForge;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public class Resources {
 	// Parts
-	public static IIcon ICON_IC;
+	/*public static IIcon ICON_IC;
 	public static IIcon ICON_IC_SOCKET;
 	public static IIcon ICON_IC_SEGMENT;
 	public static IIcon ICON_IC_WIRE;
@@ -40,7 +37,7 @@ public class Resources {
 	public static IIcon ICON_CAD_FRONT_ON;
 	public static IIcon ICON_CAD_BACK_OFF;
 	public static IIcon ICON_CAD_BACK_ON;
-	public static IIcon ICON_CAD_SIDE;
+	public static IIcon ICON_CAD_SIDE;*/
 
 	// Resources
 	public static final ResourceLocation RESOURCE_ASSEMBLER_BOTTOM = new ResourceLocation(Constants.MOD_ID,
@@ -86,7 +83,7 @@ public class Resources {
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
 	public void onTextureStitchEvent(TextureStitchEvent event) {
-		TextureMap map = event.map;
+		/*TextureMap map = event.map;
 
 		switch (map.getTextureType()) {
 			case 0:
@@ -122,7 +119,7 @@ public class Resources {
 				ICON_PCB_RAW = map.registerIcon(Constants.MOD_ID + ":pcb_raw");
 
 				break;
-		}
-		;
+		} TODO reimplement
+		;*/
 	}
 }

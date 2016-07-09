@@ -2,10 +2,10 @@ package moe.nightfall.vic.integratedcircuits.api.gate;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import codechicken.lib.vec.BlockCoord;
+import net.minecraft.util.math.BlockPos;
 
 public interface IGateItem {
-	String getGateID(ItemStack stack, EntityPlayer player, BlockCoord pos);
+	String getGateID(ItemStack stack, EntityPlayer player, BlockPos pos);
 	
 	/**
 	 * Called when a gate (circuit) is placed onto the socket.

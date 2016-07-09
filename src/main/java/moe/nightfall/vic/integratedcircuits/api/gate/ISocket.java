@@ -7,10 +7,11 @@ import moe.nightfall.vic.integratedcircuits.api.gate.ISocketBridge.ISocketBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.MovingObjectPosition;
 
 import codechicken.lib.data.MCDataInput;
-import codechicken.lib.vec.BlockCoord;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 
 /**
  * Contains all methods that have to be called by an {@link ISocketWrapper} and
@@ -34,17 +35,17 @@ public interface ISocket extends ISocketBase {
 	/**
 	 * Only has to be called when the orientation needs to be set automatically,
 	 * relative to the player's position and look vector. If you want to set the
-	 * orientation manually, use the two methods {@link #setSide(int)} and
-	 * {@link #setRotation(int)}
+	 * orientation manually, use the two methods {@link #setSide(EnumFacing)} and
+	 * {@link #setRotation(EnumFacing)}
 	 * 
 	 * @param player
 	 * @param pos
 	 * @param side
 	 * @param stack
 	 */
-	void preparePlacement(EntityPlayer player, BlockCoord pos, int side, ItemStack stack);
+	void preparePlacement(EntityPlayer player, BlockPos pos, EnumFacing side, ItemStack stack);
 
-	boolean activate(EntityPlayer player, MovingObjectPosition hit, ItemStack stack);
+	boolean activate(EntityPlayer player, RayTraceResult hit, ItemStack stack);
 
 	void onNeighborChanged();
 
@@ -61,7 +62,7 @@ public interface ISocket extends ISocketBase {
 	 */
 	boolean usesUpPlacedGate();
 
-	ItemStack pickItem(MovingObjectPosition target);
+	ItemStack pickItem(RayTraceResult target);
 
 	void scheduledTick();
 

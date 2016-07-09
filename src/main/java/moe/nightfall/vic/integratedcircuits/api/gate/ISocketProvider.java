@@ -1,8 +1,10 @@
 package moe.nightfall.vic.integratedcircuits.api.gate;
 
+import mcmultipart.multipart.PartSlot;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import codechicken.lib.vec.BlockCoord;
 
 public interface ISocketProvider {
-	public ISocket getSocketAt(World world, BlockCoord pos, int side);
+	public ISocket getSocketAt(World world, BlockPos pos, EnumFacing facing);
 }

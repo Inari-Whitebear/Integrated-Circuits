@@ -1,11 +1,11 @@
 package moe.nightfall.vic.integratedcircuits.cp.part;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import moe.nightfall.vic.integratedcircuits.misc.Vec2i;
+import net.minecraft.util.EnumFacing;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import moe.nightfall.vic.integratedcircuits.cp.CircuitPartRenderer;
 import moe.nightfall.vic.integratedcircuits.cp.ICircuit;
-import moe.nightfall.vic.integratedcircuits.misc.Vec2;
-import net.minecraftforge.common.util.ForgeDirection;
 
 public class PartMultiplexer extends PartSimpleGate {
 	@Override
@@ -15,20 +15,20 @@ public class PartMultiplexer extends PartSimpleGate {
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public Vec2 getTextureOffset(Vec2 pos, ICircuit parent, double x, double y, CircuitPartRenderer.EnumRenderType type) {
-		return new Vec2(0, 1);
+	public Vec2i getTextureOffset(Vec2i pos, ICircuit parent, double x, double y, CircuitPartRenderer.EnumRenderType type) {
+		return new Vec2i(0, 1);
 	}
 
 	@Override
-	protected void calcOutput(Vec2 pos, ICircuit parent) {
-		if (getInputFromSide(pos, parent, toExternal(pos, parent, ForgeDirection.SOUTH)))
-			setOutput(pos, parent, getInputFromSide(pos, parent, toExternal(pos, parent, ForgeDirection.WEST)));
+	protected void calcOutput(Vec2i pos, ICircuit parent) {
+		if (getInputFromSide(pos, parent, toExternal(pos, parent, EnumFacing.SOUTH)))
+			setOutput(pos, parent, getInputFromSide(pos, parent, toExternal(pos, parent, EnumFacing.WEST)));
 		else
-			setOutput(pos, parent, getInputFromSide(pos, parent, toExternal(pos, parent, ForgeDirection.EAST)));
+			setOutput(pos, parent, getInputFromSide(pos, parent, toExternal(pos, parent, EnumFacing.EAST)));
 	}
 
 	@Override
-	protected boolean hasOutputToSide(Vec2 pos, ICircuit parent, ForgeDirection fd) {
-		return fd == ForgeDirection.NORTH;
+	protected boolean hasOutputToSide(Vec2i pos, ICircuit parent, EnumFacing fd) {
+		return fd == EnumFacing.NORTH;
 	}
 }

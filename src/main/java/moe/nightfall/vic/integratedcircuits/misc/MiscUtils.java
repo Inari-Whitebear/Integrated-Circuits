@@ -1,39 +1,35 @@
 package moe.nightfall.vic.integratedcircuits.misc;
 
-import static net.minecraftforge.common.util.ForgeDirection.EAST;
-import static net.minecraftforge.common.util.ForgeDirection.NORTH;
-import static net.minecraftforge.common.util.ForgeDirection.SOUTH;
-import static net.minecraftforge.common.util.ForgeDirection.WEST;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import net.minecraft.block.SoundType;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.BlockPos;
 import org.apache.commons.lang3.text.WordUtils;
 
 import com.google.common.collect.HashBiMap;
 
-import codechicken.lib.vec.BlockCoord;
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
-import net.minecraft.block.Block.SoundType;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.StatCollector;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.oredict.OreDictionary;
 
 public class MiscUtils {
-	private static ForgeDirection[] order = { NORTH, EAST, SOUTH, WEST };
+	private static EnumFacing[] order = { EnumFacing.NORTH, EnumFacing.EAST, EnumFacing.SOUTH, EnumFacing.WEST };
 	private static int[] index = { -1, -1, 0, 2, 3, 1, -1 };
 	public static HashBiMap<String, Integer> colors = HashBiMap.create();
 
@@ -67,16 +63,15 @@ public class MiscUtils {
 
 	public static String getLocalizedColor(int color) {
 		if (color == 8)
-			return StatCollector.translateToLocal("item.fireworksCharge.silver");
+			return I18n.translateToLocal("item.fireworksCharge.silver");
 		else
-			return StatCollector.translateToLocal("item.fireworksCharge."
+			return I18n.translateToLocal("item.fireworksCharge."
 					+ WordUtils.uncapitalize(colors.inverse().get(color).substring(3)));
 	}
 
-	public static void playPlaceSound(World world, BlockCoord pos) {
-		SoundType sound = world.getBlock(pos.x, pos.y, pos.z).stepSound;
-		world.playSoundEffect(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, sound.func_150496_b(),
-				(sound.getVolume() + 1.0F) / 2.0F, sound.getPitch() * 0.8F);
+	public static void playPlaceSound(EntityPlayer player, World world, BlockPos pos) {
+		SoundType sound = world.getBlockState(pos).getBlock().getSoundType();
+		world.playSound(player, pos, sound.getPlaceSound(), SoundCategory.BLOCKS, (sound.getVolume() + 1.0F) / 2.0F, sound.getPitch() * 0.8F);
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -84,8 +79,10 @@ public class MiscUtils {
 		return Minecraft.getMinecraft().thePlayer;
 	}
 
+	/*
 	public static EntityPlayerMP getPlayerByUUID(UUID uuid) {
 		for (Object o : MinecraftServer.getServer().getConfigurationManager().playerEntityList) {
+
 			EntityPlayerMP player = (EntityPlayerMP) o;
 			if (uuid.equals(player.getGameProfile().getId()))
 				return player;
@@ -96,57 +93,55 @@ public class MiscUtils {
 	public static EntityPlayerMP getPlayerByUsername(String username) {
 		for (Object o : MinecraftServer.getServer().getConfigurationManager().playerEntityList) {
 			EntityPlayerMP player = (EntityPlayerMP) o;
-			if (player.getCommandSenderName().equalsIgnoreCase(username))
+			if (player.getCommandSenderEntity().getName().equalsIgnoreCase(username))
 				return player;
 		}
 		return null;
-	}
+	}*/
 
-	public static ForgeDirection rotn(ForgeDirection fd, int offset) {
+	public static EnumFacing rotn(EnumFacing fd, int offset) {
 		int pos = index[fd.ordinal()];
 		int newPos = pos + offset;
 		pos = newPos > 3 ? newPos - 4 : newPos < 0 ? newPos + 4 : newPos;
 		return order[pos];
 	}
 
-	public static ForgeDirection rot(ForgeDirection fd) {
+	public static EnumFacing rot(EnumFacing fd) {
 		return rotn(fd, 1);
 	}
 
-	public static ForgeDirection getDirection(int side) {
+	public static EnumFacing getDirection(int side) {
 		return order[side];
 	}
 
-	public static int getSide(ForgeDirection dir) {
-		return index[dir.ordinal()];
+	public static int getSide(EnumFacing side) {
+		return index[side.getIndex()];
 	}
 
-	public static String getLocalizedDirection(ForgeDirection fd) {
-		return I18n.format("fdirection." + fd.name().toLowerCase() + ".name");
+	public static String getLocalizedDirection(EnumFacing fd) {
+		return I18n.translateToLocalFormatted("fdirection." + fd.name().toLowerCase() + ".name");
 	}
 
 	public static AxisAlignedBB getRotatedInstance(AxisAlignedBB def, int rotation) {
-		def = def.copy();
+		//def = def.copy();
 		def.offset(-0.5, -0.5, -0.5);
 		switch (rotation) {
 			case 2:
-				def = AxisAlignedBB.getBoundingBox(def.minZ, def.minY, -def.maxX, def.maxZ, def.maxY, -def.minX);
+				def = new AxisAlignedBB(def.minZ, def.minY, -def.maxX, def.maxZ, def.maxY, -def.minX);
 			case 3:
-				def = AxisAlignedBB.getBoundingBox(-def.maxX, def.minY, -def.maxZ, -def.minX, def.maxY, -def.minZ);
+				def = new AxisAlignedBB(-def.maxX, def.minY, -def.maxZ, -def.minX, def.maxY, -def.minZ);
 			case 1:
-				def = AxisAlignedBB.getBoundingBox(-def.maxZ, def.minY, def.minX, -def.minZ, def.maxY, def.maxX);
+				def = new AxisAlignedBB(-def.maxZ, def.minY, def.minX, -def.minZ, def.maxY, def.maxX);
 		}
 		def.offset(0.5, 0.5, 0.5);
 		return def;
 	}
 
-	public static boolean canPlaceGateOnSide(World world, int x, int y, int z, int side) {
-		if (!world.blockExists(x, y, z))
+	public static boolean canPlaceGateOnSide(World world, BlockPos pos, EnumFacing side) {
+		IBlockState blockState = world.getBlockState(pos);
+		if (blockState == null)
 			return false;
-		Block block = world.getBlock(x, y, z);
-		if (block == null)
-			return false;
-		return block.isSideSolid(world, x, y, z, ForgeDirection.getOrientation(side));
+		return blockState.isSideSolid(world, pos, side);
 	}
 
 	public static void dropItem(World world, ItemStack stack, int x, int y, int z) {
@@ -199,7 +194,7 @@ public class MiscUtils {
 	}
 
 	public static List<String> splitTranslateToLocalFormatted(String toTranslate, Object... toInsert) {
-		return Arrays.asList(stringNewlineSplit(StatCollector.translateToLocalFormatted(toTranslate, toInsert)));
+		return Arrays.asList(stringNewlineSplit(I18n.translateToLocalFormatted(toTranslate, toInsert)));
 	}
 
 	public static List<String> appendToAll(Object toAppend, List<String> list) {
@@ -210,9 +205,9 @@ public class MiscUtils {
 	}
 
 	public static String translate(String unlocalizedName) {
-		String localizedName = StatCollector.translateToLocal(unlocalizedName);
+		String localizedName = I18n.translateToLocal(unlocalizedName);
 		if (localizedName.equals(unlocalizedName)) {
-			localizedName = StatCollector.translateToFallback(unlocalizedName);
+			localizedName = I18n.translateToFallback(unlocalizedName);
 			if (localizedName.equals(unlocalizedName))
 				return null;
 		}
@@ -220,9 +215,9 @@ public class MiscUtils {
 	}
 
 	public static String translateFormatted(String unlocalizedName, Object... toInsert) {
-		String localizedName = StatCollector.translateToLocalFormatted(unlocalizedName, toInsert);
+		String localizedName = I18n.translateToLocalFormatted(unlocalizedName, toInsert);
 		if (localizedName.equals(unlocalizedName)) {
-			localizedName = StatCollector.translateToFallback(unlocalizedName);
+			localizedName = I18n.translateToFallback(unlocalizedName);
 			if (localizedName.equals(unlocalizedName))
 				return null;
 		}

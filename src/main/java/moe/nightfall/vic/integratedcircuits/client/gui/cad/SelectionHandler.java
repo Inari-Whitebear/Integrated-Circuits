@@ -4,7 +4,7 @@ import moe.nightfall.vic.integratedcircuits.cp.CircuitData;
 import moe.nightfall.vic.integratedcircuits.cp.CircuitPart;
 import moe.nightfall.vic.integratedcircuits.cp.CircuitPartRenderer.CircuitRenderWrapper;
 import moe.nightfall.vic.integratedcircuits.misc.RenderUtils;
-import moe.nightfall.vic.integratedcircuits.misc.Vec2;
+import moe.nightfall.vic.integratedcircuits.misc.Vec2i;
 import moe.nightfall.vic.integratedcircuits.net.pcb.PacketPCBChangePart;
 import moe.nightfall.vic.integratedcircuits.proxy.CommonProxy;
 import net.minecraft.client.gui.Gui;
@@ -12,8 +12,8 @@ import net.minecraft.client.gui.GuiButton;
 
 public class SelectionHandler extends CADHandler {
 
-	private Vec2 selectionStart = Vec2.zero;
-	private Vec2 selectionEnd = Vec2.zero;
+	private Vec2i selectionStart = Vec2i.zero;
+	private Vec2i selectionEnd = Vec2i.zero;
 	private boolean mouseDown = false;
 
 	// TODO Looks about as ugly as it is.
@@ -67,14 +67,14 @@ public class SelectionHandler extends CADHandler {
 	}
 
 	private void copy(GuiCAD parent) {
-		Vec2 slStart = selectionStart();
-		Vec2 slEnd = selectionEnd();
+		Vec2i slStart = selectionStart();
+		Vec2i slEnd = selectionEnd();
 		CircuitData cdata = parent.getCircuitData();
 
 		data = new int[2][slEnd.x - slStart.x][slEnd.y - slStart.y];
 		for (int x = slStart.x; x < slEnd.x; x++) {
 			for (int y = slStart.y; y < slEnd.y; y++) {
-				Vec2 pos = new Vec2(x, y);
+				Vec2i pos = new Vec2i(x, y);
 				data[0][x - slStart.x][y - slStart.y] = cdata.getID(pos);
 				data[1][x - slStart.x][y - slStart.y] = cdata.getMeta(pos);
 			}
@@ -89,13 +89,13 @@ public class SelectionHandler extends CADHandler {
 
 	private void paste(GuiCAD parent) {
 		fill(parent, 0, 0);
-		Vec2 slStart = selectionStart();
+		Vec2i slStart = selectionStart();
 		CircuitData cdata = parent.getCircuitData();
 
-		PacketPCBChangePart packet = new PacketPCBChangePart(true, parent.tileentity.xCoord, parent.tileentity.yCoord, parent.tileentity.zCoord);
+		PacketPCBChangePart packet = new PacketPCBChangePart(true, parent.tileentity.getPos().getX(), parent.tileentity.getPos().getY(), parent.tileentity.getPos().getZ());
 		for (int x = 0; x < data[0].length; x++) {
 			for (int y = 0; y < data[0][x].length; y++) {
-				Vec2 pos = new Vec2(x + slStart.x, y + slStart.y);
+				Vec2i pos = new Vec2i(x + slStart.x, y + slStart.y);
 				if (pos.x < 1 || pos.x >= cdata.getSize() - 1 || pos.y < 1 || pos.y >= cdata.getSize() - 1)
 					continue;
 				packet.add(pos, data[0][x][y], data[1][x][y]);
@@ -112,26 +112,26 @@ public class SelectionHandler extends CADHandler {
 	}
 
 	private void fill(GuiCAD parent, int id, int meta) {
-		Vec2 slStart = selectionStart();
-		Vec2 slEnd = selectionEnd();
+		Vec2i slStart = selectionStart();
+		Vec2i slEnd = selectionEnd();
 		CircuitData cdata = parent.getCircuitData();
 
-		PacketPCBChangePart packet = new PacketPCBChangePart(true, parent.tileentity.xCoord, parent.tileentity.yCoord, parent.tileentity.zCoord);
+		PacketPCBChangePart packet = new PacketPCBChangePart(true, parent.tileentity.getPos().getX(), parent.tileentity.getPos().getY(), parent.tileentity.getPos().getZ());
 		for (int x = slStart.x; x < slEnd.x; x++) {
 			for (int y = slStart.y; y < slEnd.y; y++) {
-				Vec2 pos = new Vec2(x, y);
+				Vec2i pos = new Vec2i(x, y);
 				packet.add(pos, id, meta);
 			}
 		}
 		CommonProxy.networkWrapper.sendToServer(packet);
 	}
 
-	private Vec2 selectionStart() {
-		return new Vec2(Math.min(selectionStart.x, selectionEnd.x), Math.min(selectionStart.y, selectionEnd.y));
+	private Vec2i selectionStart() {
+		return new Vec2i(Math.min(selectionStart.x, selectionEnd.x), Math.min(selectionStart.y, selectionEnd.y));
 	}
 
-	private Vec2 selectionEnd() {
-		return new Vec2(Math.max(selectionStart.x + 1, selectionEnd.x + 1), Math.max(selectionStart.y + 1, selectionEnd.y + 1));
+	private Vec2i selectionEnd() {
+		return new Vec2i(Math.max(selectionStart.x + 1, selectionEnd.x + 1), Math.max(selectionStart.y + 1, selectionEnd.y + 1));
 	}
 
 	@Override
@@ -152,11 +152,11 @@ public class SelectionHandler extends CADHandler {
 			else if (gridY > w)
 				gridY = w;
 
-			selectionEnd = new Vec2(gridX, gridY);
+			selectionEnd = new Vec2i(gridX, gridY);
 		}
 		
-		Vec2 slStart = selectionStart();
-		Vec2 slEnd = selectionEnd();
+		Vec2i slStart = selectionStart();
+		Vec2i slEnd = selectionEnd();
 		if (hasSelection()) {
 			Gui.drawRect(slStart.x, slStart.y, slEnd.x, slEnd.y, 0x550000FF);
 			RenderUtils.drawBorder(slStart.x, slStart.y, slEnd.x - slStart.x, slEnd.y - slStart.y);
@@ -177,10 +177,10 @@ public class SelectionHandler extends CADHandler {
 		int gridX = (int) Math.floor(parent.boardAbs2RelX(mx));
 		int gridY = (int) Math.floor(parent.boardAbs2RelY(my));
 
-		selectionStart = selectionEnd = Vec2.zero;
+		selectionStart = selectionEnd = Vec2i.zero;
 		int w = parent.getCircuitData().getSize() - 1;
 		if (gridX > 0 && gridX < w && gridY > 0 && gridY < w) {
-			selectionStart = new Vec2(gridX, gridY);
+			selectionStart = new Vec2i(gridX, gridY);
 			mouseDown = true;
 		}
 	}
@@ -188,6 +188,6 @@ public class SelectionHandler extends CADHandler {
 	@Override
 	public void remove(GuiCAD parent) {
 		super.remove(parent);
-		selectionStart = selectionEnd = Vec2.zero;
+		selectionStart = selectionEnd = Vec2i.zero;
 	}
 }

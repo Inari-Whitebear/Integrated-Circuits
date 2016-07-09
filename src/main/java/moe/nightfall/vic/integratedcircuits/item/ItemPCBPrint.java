@@ -12,6 +12,10 @@ import net.minecraft.item.ItemMap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.Packet;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.storage.MapData;
 
@@ -19,7 +23,7 @@ public class ItemPCBPrint extends ItemMap {
 
 	public static ItemStack create(CircuitData cdata) {
 		ItemStack stack = new ItemStack(Content.itemPCBPrint);
-		stack.stackTagCompound = cdata.writeToNBT(new NBTTagCompound());
+		stack.setTagCompound(cdata.writeToNBT(new NBTTagCompound()));
 		return stack;
 	}
 
@@ -30,8 +34,8 @@ public class ItemPCBPrint extends ItemMap {
 	}
 
 	@Override
-	public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int meta, float hitX, float hitY, float hitZ) {
-		return true;
+	public EnumActionResult onItemUse(ItemStack stack, EntityPlayer playerIn, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+		return EnumActionResult.SUCCESS;
 	}
 
 	@Override
@@ -50,7 +54,7 @@ public class ItemPCBPrint extends ItemMap {
 	}
 
 	@Override
-	public Packet func_150911_c(ItemStack stack, World world, EntityPlayer player) {
+	public Packet<?> createMapDataPacket(ItemStack stack, World worldIn, EntityPlayer player) {
 		return null;
 	}
 

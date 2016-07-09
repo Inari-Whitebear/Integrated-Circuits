@@ -7,9 +7,10 @@ import moe.nightfall.vic.integratedcircuits.proxy.CommonProxy;
 import moe.nightfall.vic.integratedcircuits.tile.TileEntityCAD;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.ChatComponentText;
-import cpw.mods.fml.common.network.NetworkRegistry.TargetPoint;
-import cpw.mods.fml.relauncher.Side;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class PacketPCBCache extends PacketTileEntity<PacketPCBCache> {
 	public static final byte SNAPSHOT = 0;
@@ -40,7 +41,7 @@ public class PacketPCBCache extends PacketTileEntity<PacketPCBCache> {
 
 	@Override
 	public void process(EntityPlayer player, Side side) {
-		TileEntityCAD te = (TileEntityCAD) player.worldObj.getTileEntity(xCoord, yCoord, zCoord);
+		TileEntityCAD te = (TileEntityCAD) player.worldObj.getTileEntity(new BlockPos(xCoord, yCoord, zCoord));
 		if (te != null) {
 			switch (mode) {
 				case SNAPSHOT:
@@ -50,18 +51,18 @@ public class PacketPCBCache extends PacketTileEntity<PacketPCBCache> {
 					try {
 						te.cache.undo(player.getGameProfile().getId());
 						CommonProxy.networkWrapper.sendToAllAround(new PacketPCBLoad(te.getCircuitData(), xCoord, yCoord,
-								zCoord), new TargetPoint(te.getWorldObj().provider.dimensionId, xCoord, yCoord, zCoord, 8));
+								zCoord), new TargetPoint(te.getWorld().provider.getDimension(), xCoord, yCoord, zCoord, 8));
 					} catch (ArrayIndexOutOfBoundsException e) {
-						player.addChatMessage(new ChatComponentText("[CAD]: No more undos"));
+						player.addChatMessage(new TextComponentString("[CAD]: No more undos"));
 					}
 					break;
 				case REDO:
 					try {
 						te.cache.redo(player.getGameProfile().getId());
 						CommonProxy.networkWrapper.sendToAllAround(new PacketPCBLoad(te.getCircuitData(), xCoord, yCoord,
-								zCoord), new TargetPoint(te.getWorldObj().provider.dimensionId, xCoord, yCoord, zCoord, 8));
+								zCoord), new TargetPoint(te.getWorld().provider.getDimension(), xCoord, yCoord, zCoord, 8));
 					} catch (ArrayIndexOutOfBoundsException e) {
-						player.addChatMessage(new ChatComponentText("[CAD]: No more redos"));
+						player.addChatMessage(new TextComponentString("[CAD]: No more redos"));
 					}
 					break;
 			}

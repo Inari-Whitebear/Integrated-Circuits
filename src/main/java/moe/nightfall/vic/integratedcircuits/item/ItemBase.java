@@ -1,9 +1,8 @@
 package moe.nightfall.vic.integratedcircuits.item;
 
-import cpw.mods.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import moe.nightfall.vic.integratedcircuits.Constants;
 import moe.nightfall.vic.integratedcircuits.IntegratedCircuits;
-import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.item.Item;
 
 public class ItemBase extends Item {
@@ -16,18 +15,18 @@ public class ItemBase extends Item {
 	static void register(Item item, String name) {
 		item.setCreativeTab(IntegratedCircuits.creativeTab);
 		item.setUnlocalizedName(Constants.MOD_ID + "." + name);
-		item.setTextureName(Constants.MOD_ID + ":" + name);
-		GameRegistry.registerItem(item, Constants.MOD_ID + "_" + name, Constants.MOD_ID);
+		item.setRegistryName(name);
+		GameRegistry.register(item);
 	}
 
 	public ItemBase setHasIcon(boolean hasIcon) {
 		this.hasIcon = hasIcon;
 		return this;
 	}
-
+/* FIXME 1.8+ rendering
 	@Override
 	public void registerIcons(IIconRegister ir) {
 		if (hasIcon)
 			super.registerIcons(ir);
-	}
+	}*/
 }

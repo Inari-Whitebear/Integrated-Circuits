@@ -10,7 +10,8 @@ import moe.nightfall.vic.integratedcircuits.tile.TileEntityCAD;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.PacketBuffer;
-import cpw.mods.fml.relauncher.Side;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class PacketPCBUpdate extends PacketTileEntity<PacketPCBUpdate> {
 	private CircuitData data;
@@ -39,8 +40,8 @@ public class PacketPCBUpdate extends PacketTileEntity<PacketPCBUpdate> {
 
 	@Override
 	public void process(EntityPlayer player, Side side) {
-		TileEntityCAD layout = (TileEntityCAD) Minecraft.getMinecraft().theWorld.getTileEntity(xCoord,
-				yCoord, zCoord);
+		TileEntityCAD layout = (TileEntityCAD) Minecraft.getMinecraft().theWorld.getTileEntity(new BlockPos(xCoord,
+				yCoord, zCoord));
 		if (layout != null) {
 			data = layout.getCircuitData();
 			data.readFromStream(buf);

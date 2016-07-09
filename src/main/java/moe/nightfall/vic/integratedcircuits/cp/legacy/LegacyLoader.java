@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import moe.nightfall.vic.integratedcircuits.cp.CircuitData;
-import moe.nightfall.vic.integratedcircuits.misc.Vec2;
+import moe.nightfall.vic.integratedcircuits.misc.Vec2i;
 import net.minecraft.nbt.NBTTagCompound;
 
 public abstract class LegacyLoader implements Comparable<LegacyLoader> {
@@ -68,7 +68,7 @@ public abstract class LegacyLoader implements Comparable<LegacyLoader> {
 	public void postTransform(CircuitData cdata) {
 		for (int x = 0; x < cdata.getSize(); x++) {
 			for (int y = 0; y < cdata.getSize(); y++) {
-				Vec2 pos = new Vec2(x, y);
+				Vec2i pos = new Vec2i(x, y);
 				int pid = cdata.getID(pos);
 				if (partTransformers.containsKey(pid)) {
 					PartTransformer transformer = partTransformers.get(pid);
@@ -122,7 +122,7 @@ public abstract class LegacyLoader implements Comparable<LegacyLoader> {
 		protected void transformImpl() {
 		}
 
-		public void postTransform(Vec2 crd, CircuitData cdata) {
+		public void postTransform(Vec2i crd, CircuitData cdata) {
 		}
 	}
 

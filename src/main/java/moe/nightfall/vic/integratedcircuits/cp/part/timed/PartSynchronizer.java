@@ -1,12 +1,12 @@
 package moe.nightfall.vic.integratedcircuits.cp.part.timed;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import moe.nightfall.vic.integratedcircuits.misc.Vec2i;
+import net.minecraft.util.EnumFacing;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import moe.nightfall.vic.integratedcircuits.cp.CircuitPartRenderer;
 import moe.nightfall.vic.integratedcircuits.cp.ICircuit;
-import moe.nightfall.vic.integratedcircuits.misc.Vec2;
 import moe.nightfall.vic.integratedcircuits.misc.PropertyStitcher.BooleanProperty;
-import net.minecraftforge.common.util.ForgeDirection;
 
 public class PartSynchronizer extends PartDelayedAction {
 	public final BooleanProperty PROP_IN_EAST = new BooleanProperty("IN_EAST", stitcher);
@@ -15,22 +15,22 @@ public class PartSynchronizer extends PartDelayedAction {
 	public final BooleanProperty PROP_OLD_WEST = new BooleanProperty("OLD_WEST", stitcher);
 
 	@Override
-	public int getDelay(Vec2 pos, ICircuit parent) {
+	public int getDelay(Vec2i pos, ICircuit parent) {
 		return 2;
 	}
 
 	@Override
-	public void onInputChange(Vec2 pos, ICircuit parent) {
+	public void onInputChange(Vec2i pos, ICircuit parent) {
 		scheduleTick(pos, parent);
 	}
 
 	@Override
-	public void onScheduledTick(Vec2 pos, ICircuit parent) {
+	public void onScheduledTick(Vec2i pos, ICircuit parent) {
 		super.onScheduledTick(pos, parent);
-		ForgeDirection west = toExternal(pos, parent, ForgeDirection.WEST);
+		EnumFacing west = toExternal(pos, parent, EnumFacing.WEST);
 		boolean westIn = getInputFromSide(pos, parent, west);
 		boolean eastIn = getInputFromSide(pos, parent, west.getOpposite());
-		if (getInputFromSide(pos, parent, toExternal(pos, parent, ForgeDirection.SOUTH))) {
+		if (getInputFromSide(pos, parent, toExternal(pos, parent, EnumFacing.SOUTH))) {
 			setProperty(pos, parent, PROP_IN_EAST, false);
 			setProperty(pos, parent, PROP_IN_WEST, false);
 			setDelay(pos, parent, false);
@@ -53,21 +53,21 @@ public class PartSynchronizer extends PartDelayedAction {
 	}
 
 	@Override
-	public void onDelay(Vec2 pos, ICircuit parent) {
+	public void onDelay(Vec2i pos, ICircuit parent) {
 		notifyNeighbours(pos, parent);
 	}
 
 	@Override
-	public boolean getOutputToSide(Vec2 pos, ICircuit parent, ForgeDirection side) {
-		ForgeDirection s2 = toInternal(pos, parent, side);
-		if (s2 == ForgeDirection.NORTH)
+	public boolean getOutputToSide(Vec2i pos, ICircuit parent, EnumFacing side) {
+		EnumFacing s2 = toInternal(pos, parent, side);
+		if (s2 == EnumFacing.NORTH)
 			return isDelayActive(pos, parent);
 		return false;
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public Vec2 getTextureOffset(Vec2 pos, ICircuit parent, double x, double y, CircuitPartRenderer.EnumRenderType type) {
-		return new Vec2(10, 1);
+	public Vec2i getTextureOffset(Vec2i pos, ICircuit parent, double x, double y, CircuitPartRenderer.EnumRenderType type) {
+		return new Vec2i(10, 1);
 	}
 }

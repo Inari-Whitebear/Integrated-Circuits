@@ -6,12 +6,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import moe.nightfall.vic.integratedcircuits.cp.CircuitData;
-import moe.nightfall.vic.integratedcircuits.misc.Vec2;
+import moe.nightfall.vic.integratedcircuits.misc.Vec2i;
 import moe.nightfall.vic.integratedcircuits.net.PacketTileEntity;
 import moe.nightfall.vic.integratedcircuits.tile.TileEntityCAD;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.PacketBuffer;
-import cpw.mods.fml.relauncher.Side;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class PacketPCBChangePart extends PacketTileEntity<PacketPCBChangePart> {
 	private List<Integer> data;
@@ -37,7 +38,7 @@ public class PacketPCBChangePart extends PacketTileEntity<PacketPCBChangePart> {
 		this.flag = flag;
 	}
 
-	public PacketPCBChangePart add(Vec2 pos, int id, int meta) {
+	public PacketPCBChangePart add(Vec2i pos, int id, int meta) {
 		data.add(pos.x);
 		data.add(pos.y);
 		data.add(id);
@@ -68,7 +69,7 @@ public class PacketPCBChangePart extends PacketTileEntity<PacketPCBChangePart> {
 
 	@Override
 	public void process(EntityPlayer player, Side side) {
-		TileEntityCAD te = (TileEntityCAD) player.worldObj.getTileEntity(xCoord, yCoord, zCoord);
+		TileEntityCAD te = (TileEntityCAD) player.worldObj.getTileEntity(new BlockPos(xCoord, yCoord, zCoord));
 		if (te != null) {
 			CircuitData cdata = te.getCircuitData();
 
@@ -76,7 +77,7 @@ public class PacketPCBChangePart extends PacketTileEntity<PacketPCBChangePart> {
 				te.cache.create(player.getGameProfile().getId());
 
 			for (int i = 0; i < data.size(); i += 4) {
-				Vec2 pos = new Vec2(data.get(i), data.get(i + 1));
+				Vec2i pos = new Vec2i(data.get(i), data.get(i + 1));
 				if (button != -1)
 					cdata.getPart(pos).onClick(pos, te, button, flag);
 				else {

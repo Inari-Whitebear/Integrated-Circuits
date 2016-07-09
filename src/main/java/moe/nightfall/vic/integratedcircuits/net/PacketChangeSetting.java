@@ -7,8 +7,9 @@ import moe.nightfall.vic.integratedcircuits.proxy.CommonProxy;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
-import cpw.mods.fml.common.network.NetworkRegistry.TargetPoint;
-import cpw.mods.fml.relauncher.Side;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class PacketChangeSetting<T extends TileEntity & IOptionsProvider> extends PacketTileEntity {
 	private int setting, param;
@@ -38,11 +39,11 @@ public class PacketChangeSetting<T extends TileEntity & IOptionsProvider> extend
 
 	@Override
 	public void process(EntityPlayer player, Side side) {
-		T te = (T) player.worldObj.getTileEntity(xCoord, yCoord, zCoord);
+		T te = (T) player.worldObj.getTileEntity(new BlockPos(xCoord, yCoord, zCoord));
 		if (te == null)
 			return;
 		if (side == Side.SERVER)
-			CommonProxy.networkWrapper.sendToAllAround(this, new TargetPoint(te.getWorldObj().provider.dimensionId,
+			CommonProxy.networkWrapper.sendToAllAround(this, new TargetPoint(te.getWorld().provider.getDimension(),
 					xCoord, yCoord, zCoord, 8));
 		te.getOptionSet().changeSettingPayload(setting, param);
 		te.onSettingChanged(setting);

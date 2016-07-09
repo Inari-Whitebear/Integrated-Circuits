@@ -9,7 +9,7 @@ import moe.nightfall.vic.integratedcircuits.misc.MiscUtils;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.StatCollector;
+import net.minecraft.util.text.translation.I18n;
 
 public class ItemFloppyDisk extends ItemBase {
 	public ItemFloppyDisk() {
@@ -31,12 +31,12 @@ public class ItemFloppyDisk extends ItemBase {
 
 	public static void addInformation(NBTTagCompound comp, List itemInformation, boolean author) {
 		int size = comp.getInteger("size");
-		itemInformation.add(ChatFormatting.GRAY + StatCollector.translateToLocalFormatted("circuit.tooltip.name",
+		itemInformation.add(ChatFormatting.GRAY + I18n.translateToLocalFormatted("circuit.tooltip.name",
 				ChatFormatting.WHITE + comp.getCompoundTag("properties").getString("name")));
-		itemInformation.add(ChatFormatting.GRAY + StatCollector.translateToLocalFormatted("circuit.tooltip.size",
+		itemInformation.add(ChatFormatting.GRAY + I18n.translateToLocalFormatted("circuit.tooltip.size",
 				"" + ChatFormatting.WHITE + size + "x" + size));
 		if (author)
-			itemInformation.add(ChatFormatting.GRAY + StatCollector.translateToLocalFormatted("circuit.tooltip.author",
+			itemInformation.add(ChatFormatting.GRAY + I18n.translateToLocalFormatted("circuit.tooltip.author",
 					ChatFormatting.WHITE + comp.getCompoundTag("properties").getString("author")));
 	}
 }

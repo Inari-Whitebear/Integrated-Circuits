@@ -6,16 +6,16 @@ import java.util.List;
 import moe.nightfall.vic.integratedcircuits.client.gui.GuiInterfaces.IHoverable;
 import moe.nightfall.vic.integratedcircuits.client.gui.GuiInterfaces.IHoverableHandler;
 import moe.nightfall.vic.integratedcircuits.misc.MiscUtils;
-import moe.nightfall.vic.integratedcircuits.misc.Vec2;
+import moe.nightfall.vic.integratedcircuits.misc.Vec2i;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
-import cpw.mods.fml.client.config.GuiButtonExt;
+import net.minecraftforge.fml.client.config.GuiButtonExt;
 
 public class GuiIconButton extends GuiButtonExt implements IHoverable {
 
 	private ResourceLocation resource;
-	private Vec2 size;
-	private Vec2 pos;
+	private Vec2i size;
+	private Vec2i pos;
 
 	private boolean isToggleable;
 	private boolean isUntoggleDisabled;
@@ -26,17 +26,17 @@ public class GuiIconButton extends GuiButtonExt implements IHoverable {
 	public GuiIconButton(int id, int xPos, int yPos, int width, int height, ResourceLocation resource) {
 		super(id, xPos, yPos, width, height, "");
 		this.resource = resource;
-		size = new Vec2(width, height);
-		pos = new Vec2(0, 0);
+		size = new Vec2i(width, height);
+		pos = new Vec2i(0, 0);
 	}
 
 	public GuiIconButton setIcon(int xPos, int yPos) {
-		pos = new Vec2(xPos, yPos);
+		pos = new Vec2i(xPos, yPos);
 		return this;
 	}
 
 	public GuiIconButton setIcon(int xPos, int yPos, int width, int height) {
-		size = new Vec2(width, height);
+		size = new Vec2i(width, height);
 		return setIcon(xPos, yPos);
 	}
 

@@ -1,5 +1,6 @@
 package moe.nightfall.vic.integratedcircuits.client.gui.cad;
 
+import moe.nightfall.vic.integratedcircuits.misc.Vec2i;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
@@ -12,7 +13,6 @@ import moe.nightfall.vic.integratedcircuits.cp.part.PartCPGate;
 import moe.nightfall.vic.integratedcircuits.cp.part.PartNull;
 import moe.nightfall.vic.integratedcircuits.cp.part.PartWire;
 import moe.nightfall.vic.integratedcircuits.misc.RenderUtils;
-import moe.nightfall.vic.integratedcircuits.misc.Vec2;
 import moe.nightfall.vic.integratedcircuits.net.pcb.PacketPCBCache;
 import moe.nightfall.vic.integratedcircuits.net.pcb.PacketPCBChangePart;
 import moe.nightfall.vic.integratedcircuits.proxy.CommonProxy;
@@ -165,7 +165,7 @@ public class PlaceHandler extends CADHandler {
 				int state = selectedPart.getState();
 
 				PacketPCBChangePart packet = new PacketPCBChangePart(true, parent.tileentity.xCoord, parent.tileentity.yCoord, parent.tileentity.zCoord);
-				packet.add(new Vec2(parent.startX, parent.startY), id, state);
+				packet.add(new Vec2i(parent.startX, parent.startY), id, state);
 				while (parent.startX != parent.endX || parent.startY != parent.endY) {
 					if (parent.startY < parent.endY)
 						parent.startY++;
@@ -175,7 +175,7 @@ public class PlaceHandler extends CADHandler {
 						parent.startX++;
 					else if (parent.startX > parent.endX)
 						parent.startX--;
-					packet.add(new Vec2(parent.startX, parent.startY), id, state);
+					packet.add(new Vec2i(parent.startX, parent.startY), id, state);
 				}
 				CommonProxy.networkWrapper.sendToServer(packet);
 			}
@@ -189,7 +189,7 @@ public class PlaceHandler extends CADHandler {
 				if (parent.startX > 0 && parent.startY > 0 && parent.startX < w - 1 && parent.startY < w - 1 && !GuiScreen.isShiftKeyDown()) {
 					int newID = CircuitPart.getId(selectedPart.getPart());
 
-					Vec2 pos = new Vec2(parent.startX, parent.startY);
+					Vec2i pos = new Vec2i(parent.startX, parent.startY);
 					if (newID != parent.getCircuitData().getID(pos)) {
 						CommonProxy.networkWrapper.sendToServer(new PacketPCBChangePart(!(selectedPart.getPart() instanceof PartNull), parent.tileentity.xCoord, parent.tileentity.yCoord, parent.tileentity.zCoord).add(pos, newID, selectedPart.getState()));
 					}
@@ -207,7 +207,7 @@ public class PlaceHandler extends CADHandler {
 			boolean shiftDown = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT);
 
 			if (boardX > 0 && boardY > 0 && boardX < w - 1 && boardY < w - 1 && !shiftDown) {
-				Vec2 pos = new Vec2(boardX, boardY);
+				Vec2i pos = new Vec2i(boardX, boardY);
 				if (!(parent.tileentity.getCircuitData().getPart(pos) instanceof PartNull)) {
 					CommonProxy.networkWrapper.sendToServer(new PacketPCBChangePart(false,
 							parent.tileentity.xCoord, parent.tileentity.yCoord, parent.tileentity.zCoord)

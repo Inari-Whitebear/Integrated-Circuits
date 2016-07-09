@@ -5,8 +5,8 @@ import moe.nightfall.vic.integratedcircuits.api.gate.ISocketBridge.ISocketBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.MovingObjectPosition;
 import codechicken.lib.data.MCDataInput;
+import net.minecraft.util.math.RayTraceResult;
 
 public abstract class Gate implements IGate {
 	protected ISocketBase provider;
@@ -46,12 +46,12 @@ public abstract class Gate implements IGate {
 	}
 
 	@Override
-	public boolean activate(EntityPlayer player, MovingObjectPosition hit, ItemStack item) {
+	public boolean activate(EntityPlayer player, RayTraceResult hit, ItemStack item) {
 		return false;
 	}
 
 	@Override
-	public void onActivatedWithScrewdriver(EntityPlayer player, MovingObjectPosition hit, ItemStack item) {
+	public void onActivatedWithScrewdriver(EntityPlayer player, RayTraceResult hit, ItemStack item) {
 	}
 
 	@Override
@@ -80,7 +80,7 @@ public abstract class Gate implements IGate {
 	}
 
 	@Override
-	public ItemStack pickItem(MovingObjectPosition hit) {
+	public ItemStack pickItem(RayTraceResult hit) {
 		return getItemStack();
 	}
 

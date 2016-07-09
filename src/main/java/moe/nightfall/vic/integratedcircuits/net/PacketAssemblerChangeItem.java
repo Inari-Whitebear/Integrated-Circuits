@@ -6,7 +6,8 @@ import moe.nightfall.vic.integratedcircuits.client.TileEntityAssemblerRenderer;
 import moe.nightfall.vic.integratedcircuits.tile.TileEntityAssembler;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.PacketBuffer;
-import cpw.mods.fml.relauncher.Side;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class PacketAssemblerChangeItem extends PacketTileEntity<PacketAssemblerChangeItem> {
 	private boolean occupied;
@@ -33,7 +34,7 @@ public class PacketAssemblerChangeItem extends PacketTileEntity<PacketAssemblerC
 
 	@Override
 	public void process(EntityPlayer player, Side side) {
-		TileEntityAssembler te = (TileEntityAssembler) player.worldObj.getTileEntity(xCoord, yCoord, zCoord);
+		TileEntityAssembler te = (TileEntityAssembler) player.worldObj.getTileEntity(new BlockPos(xCoord, yCoord, zCoord));
 		if (te == null)
 			return;
 		te.excMatrix = null;

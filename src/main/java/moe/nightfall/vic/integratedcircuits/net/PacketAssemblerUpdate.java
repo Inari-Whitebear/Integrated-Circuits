@@ -7,16 +7,19 @@ import moe.nightfall.vic.integratedcircuits.client.TileEntityAssemblerRenderer;
 import moe.nightfall.vic.integratedcircuits.tile.TileEntityAssembler;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.PacketBuffer;
-import cpw.mods.fml.relauncher.Side;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class PacketAssemblerUpdate extends PacketTileEntity<PacketAssemblerUpdate> {
-	private int x, y, id;
+	private int x, y;
+	private EnumFacing id;
 	private boolean isRunning;
 
 	public PacketAssemblerUpdate() {
 	}
 
-	public PacketAssemblerUpdate(boolean isActive, int x, int y, int id, int xCoord, int yCoord, int zCoord) {
+	public PacketAssemblerUpdate(boolean isActive, int x, int y, EnumFacing id, int xCoord, int yCoord, int zCoord) {
 		super(xCoord, yCoord, zCoord);
 		this.x = x;
 		this.y = y;
@@ -28,7 +31,7 @@ public class PacketAssemblerUpdate extends PacketTileEntity<PacketAssemblerUpdat
 	public void read(PacketBuffer buffer) throws IOException {
 		super.read(buffer);
 		this.isRunning = buffer.readBoolean();
-		this.id = buffer.readInt();
+		this.id = EnumFacing.getHorizontal(buffer.readInt());
 		this.x = buffer.readInt();
 		this.y = buffer.readInt();
 	}
@@ -37,14 +40,14 @@ public class PacketAssemblerUpdate extends PacketTileEntity<PacketAssemblerUpdat
 	public void write(PacketBuffer buffer) throws IOException {
 		super.write(buffer);
 		buffer.writeBoolean(isRunning);
-		buffer.writeInt(id);
+		buffer.writeInt(id.getHorizontalIndex());
 		buffer.writeInt(x);
 		buffer.writeInt(y);
 	}
 
 	@Override
 	public void process(EntityPlayer player, Side side) {
-		TileEntityAssembler te = (TileEntityAssembler) player.worldObj.getTileEntity(xCoord, yCoord, zCoord);
+		TileEntityAssembler te = (TileEntityAssembler) player.worldObj.getTileEntity(new BlockPos(xCoord, yCoord, zCoord));
 		if (te == null)
 			return;
 		Laser laser = te.laserHelper.getLaser(id);
@@ -56,7 +59,7 @@ public class PacketAssemblerUpdate extends PacketTileEntity<PacketAssemblerUpdat
 		laser.isRunning = isRunning;
 		te.laserHelper.updateStatus();
 		if (!te.laserHelper.isRunning)
-			te.getWorldObj().markBlockRangeForRenderUpdate(xCoord, yCoord, zCoord, xCoord, yCoord, zCoord);
+			te.getWorld().markBlockRangeForRenderUpdate(xCoord, yCoord, zCoord, xCoord, yCoord, zCoord);
 		laser.setAim(x, y);
 		te.laserHelper.position++;
 	}

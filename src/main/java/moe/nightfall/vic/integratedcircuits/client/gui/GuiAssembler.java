@@ -8,7 +8,7 @@ import moe.nightfall.vic.integratedcircuits.client.gui.component.GuiCraftingList
 import moe.nightfall.vic.integratedcircuits.client.gui.component.GuiStateLabel;
 import moe.nightfall.vic.integratedcircuits.cp.CircuitProperties;
 import moe.nightfall.vic.integratedcircuits.misc.ItemAmount;
-import moe.nightfall.vic.integratedcircuits.misc.Vec2;
+import moe.nightfall.vic.integratedcircuits.misc.Vec2i;
 import moe.nightfall.vic.integratedcircuits.net.PacketAssemblerStart;
 import moe.nightfall.vic.integratedcircuits.proxy.ClientProxy;
 import moe.nightfall.vic.integratedcircuits.proxy.CommonProxy;
@@ -16,16 +16,16 @@ import moe.nightfall.vic.integratedcircuits.tile.TileEntityAssembler;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.math.MathHelper;
 
+import net.minecraft.util.text.TextFormatting;
 import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.opengl.GL11;
 
-import cpw.mods.fml.client.config.GuiButtonExt;
+import net.minecraftforge.fml.client.config.GuiButtonExt;
 
 public class GuiAssembler extends GuiContainer implements IHoverableHandler {
 	public TileEntityAssembler te;
@@ -51,7 +51,6 @@ public class GuiAssembler extends GuiContainer implements IHoverableHandler {
 	public void initGui() {
 		super.initGui();
 		craftingList = new GuiCraftingList(this, mc, guiLeft + 29, guiTop + 26, 110, 62);
-
 		this.buttonList.add(new GuiButtonExt(0, guiLeft + 71, guiTop + 95, 10, 10, "+"));
 		this.buttonList.add(new GuiButtonExt(1, guiLeft + 33, guiTop + 95, 10, 10, "-"));
 		this.buttonList.add(new GuiButtonExt(2, guiLeft + 89, guiTop + 93, 30, 14, I18n
@@ -60,14 +59,14 @@ public class GuiAssembler extends GuiContainer implements IHoverableHandler {
 
 		this.buttonList.add(labelAutomaticPull = new GuiStateLabel(4, guiLeft + 9, guiTop + 47, 14, 14,
 				Resources.RESOURCE_GUI_ASSEMBLER_BACKGROUND)
-			.addState(new Vec2(176, 0), new Vec2(176, 14))
+			.addState(new Vec2i(176, 0), new Vec2i(176, 14))
 			.addDescription(I18n.format("gui.integratedcircuits.assembler.pull.single"),
 					I18n.format("gui.integratedcircuits.assembler.pull.auto"))
 			.setState(te.getOptionSet().getInt(te.SETTING_PULL)));
 
 		this.buttonList.add(labelRedstoneMode = new GuiStateLabel(5, guiLeft + 9, guiTop + 29, 14, 14,
 				Resources.RESOURCE_GUI_ASSEMBLER_BACKGROUND)
-			.addState(new Vec2(176, 28), new Vec2(176, 42), new Vec2(176, 56))
+			.addState(new Vec2i(176, 28), new Vec2i(176, 42), new Vec2i(176, 56))
 			.addDescription(I18n.format("gui.integratedcircuits.assembler.redstone.enabled"),
 					I18n.format("gui.integratedcircuits.assembler.redstone.inverted"),
 					I18n.format("gui.integratedcircuits.assembler.redstone.disabled"))
@@ -96,7 +95,7 @@ public class GuiAssembler extends GuiContainer implements IHoverableHandler {
 		else if (button.id == 5)
 			te.getOptionSet().changeSetting(te.SETTING_REDSTONE, ((GuiStateLabel) button).getState());
 		else
-			CommonProxy.networkWrapper.sendToServer(new PacketAssemblerStart(te.xCoord, te.yCoord, te.zCoord,
+			CommonProxy.networkWrapper.sendToServer(new PacketAssemblerStart(te.getPos().getX(), te.getPos().getY(), te.getPos().getZ(),
 					(byte) (te.request * (button.id == 2 ? 1 : 0))));
 	}
 
@@ -133,7 +132,7 @@ public class GuiAssembler extends GuiContainer implements IHoverableHandler {
 					guiTop + 12, 0x333333);
 		} else
 			fontRendererObj.drawString(
-					EnumChatFormatting.ITALIC + I18n.format("gui.integratedcircuits.assembler.nocircuit"),
+					TextFormatting.ITALIC + I18n.format("gui.integratedcircuits.assembler.nocircuit"),
 					guiLeft + 30, guiTop + 12, 0x333333);
 
 		craftingList.drawScreen(x, y, par1);

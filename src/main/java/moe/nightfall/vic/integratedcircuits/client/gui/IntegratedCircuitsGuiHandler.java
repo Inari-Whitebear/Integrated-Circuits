@@ -6,8 +6,9 @@ import moe.nightfall.vic.integratedcircuits.client.gui.cad.GuiCAD;
 import moe.nightfall.vic.integratedcircuits.tile.TileEntityAssembler;
 import moe.nightfall.vic.integratedcircuits.tile.TileEntityCAD;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import cpw.mods.fml.common.network.IGuiHandler;
+import net.minecraftforge.fml.common.network.IGuiHandler;
 
 public class IntegratedCircuitsGuiHandler implements IGuiHandler {
 	@Override
@@ -22,9 +23,9 @@ public class IntegratedCircuitsGuiHandler implements IGuiHandler {
 						return true;
 					}
 				};*/
-				return new ContainerCAD((TileEntityCAD) world.getTileEntity(x, y, z));
+				return new ContainerCAD((TileEntityCAD) world.getTileEntity(new BlockPos(x, y, z)));
 			case 1:
-				return new ContainerAssembler(player.inventory, (TileEntityAssembler) world.getTileEntity(x, y, z));
+				return new ContainerAssembler(player.inventory, (TileEntityAssembler) world.getTileEntity(new BlockPos(x, y, z)));
 		}
 		return null;
 	}
@@ -34,10 +35,9 @@ public class IntegratedCircuitsGuiHandler implements IGuiHandler {
 		switch (id) {
 			case 0:
 				// return new TestGUI();
-				return new GuiCAD(new ContainerCAD((TileEntityCAD) world.getTileEntity(x, y, z)));
+				return new GuiCAD(new ContainerCAD((TileEntityCAD) world.getTileEntity(new BlockPos(x, y, z))));
 			case 1:
-				return new GuiAssembler(new ContainerAssembler(player.inventory, (TileEntityAssembler) world.getTileEntity(
-						x, y, z)));
+				return new GuiAssembler(new ContainerAssembler(player.inventory, (TileEntityAssembler) world.getTileEntity(new BlockPos(x, y, z))));
 		}
 		return null;
 	}

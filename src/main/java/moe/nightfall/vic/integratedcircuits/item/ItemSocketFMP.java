@@ -1,5 +1,5 @@
 package moe.nightfall.vic.integratedcircuits.item;
-
+/*
 import moe.nightfall.vic.integratedcircuits.Constants;
 import moe.nightfall.vic.integratedcircuits.api.gate.ISocketWrapper;
 import moe.nightfall.vic.integratedcircuits.misc.MiscUtils;
@@ -13,8 +13,8 @@ import codechicken.multipart.MultiPartRegistry;
 import codechicken.multipart.TItemMultiPart;
 import codechicken.multipart.TMultiPart;
 import codechicken.multipart.TileMultipart;
-import cpw.mods.fml.common.Optional.Interface;
-import cpw.mods.fml.common.Optional.Method;
+import net.minecraftforge.fml.common.Optional.Interface;
+import net.minecraftforge.fml.common.Optional.Method;
 
 @Interface(iface = "codechicken.multipart.TItemMultiPart", modid = "ForgeMultipart")
 public class ItemSocketFMP extends ItemBase implements TItemMultiPart {
@@ -74,3 +74,4 @@ public class ItemSocketFMP extends ItemBase implements TItemMultiPart {
 		return (TMultiPart) part;
 	}
 }
+*/

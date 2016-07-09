@@ -8,15 +8,12 @@ import moe.nightfall.vic.integratedcircuits.cp.CircuitPartRenderer;
 import moe.nightfall.vic.integratedcircuits.cp.CircuitPartRenderer.CircuitRenderWrapper;
 import moe.nightfall.vic.integratedcircuits.cp.CircuitPartRenderer.EnumRenderType;
 import moe.nightfall.vic.integratedcircuits.cp.ICircuit;
-import moe.nightfall.vic.integratedcircuits.misc.CraftingAmount;
-import moe.nightfall.vic.integratedcircuits.misc.ItemAmount;
+import moe.nightfall.vic.integratedcircuits.misc.*;
 import moe.nightfall.vic.integratedcircuits.misc.PropertyStitcher.BooleanProperty;
 import moe.nightfall.vic.integratedcircuits.misc.PropertyStitcher.IntProperty;
-import moe.nightfall.vic.integratedcircuits.misc.RenderUtils;
-import moe.nightfall.vic.integratedcircuits.misc.Vec2;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.init.Items;
-import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraft.util.EnumFacing;
 
 public class PartTunnel extends CircuitPart {
 
@@ -25,25 +22,25 @@ public class PartTunnel extends CircuitPart {
 	public final BooleanProperty PROP_IN = new BooleanProperty("PROP_IN", stitcher);
 
 	// pos is for CURRENT part
-	public Vec2 getConnectedPos(Vec2 pos, ICircuit parent) {
-		return new Vec2(getProperty(pos, parent, PROP_POS_X), getProperty(pos, parent, PROP_POS_Y));
+	public Vec2i getConnectedPos(Vec2i pos, ICircuit parent) {
+		return new Vec2i(getProperty(pos, parent, PROP_POS_X), getProperty(pos, parent, PROP_POS_Y));
 	}
 
 	// pos is for CONNECTED part
-	public int setConnectedPos(int data, Vec2 pos) {
+	public int setConnectedPos(int data, Vec2i pos) {
 		data = PROP_POS_X.set(pos.x, data);
 		data = PROP_POS_Y.set(pos.y, data);
 		return data;
 	}
 
 	// pos is for CONNECTED part
-	public boolean isConnected(Vec2 pos) {
+	public boolean isConnected(Vec2i pos) {
 		return pos.x != 255 && pos.y != 255;
 	}
 
 	// pos is for CURRENT part, not connected one, like with getNeighbourOnSide
-	public PartTunnel getConnectedPart(Vec2 pos, ICircuit parent) {
-		Vec2 pos2 = getConnectedPos(pos, parent);
+	public PartTunnel getConnectedPart(Vec2i pos, ICircuit parent) {
+		Vec2i pos2 = getConnectedPos(pos, parent);
 		if (isConnected(pos2)) {
 			CircuitPart cp = parent.getCircuitData().getPart(pos2);
 			if (cp instanceof PartTunnel) {
@@ -60,15 +57,15 @@ public class PartTunnel extends CircuitPart {
 	}
 
 	@Override
-	public void onInputChange(Vec2 pos, ICircuit parent) {
+	public void onInputChange(Vec2i pos, ICircuit parent) {
 		// updateInput analog for paired tunnel part
-		Vec2 pos2 = getConnectedPos(pos, parent);
+		Vec2i pos2 = getConnectedPos(pos, parent);
 		PartTunnel part = getConnectedPart(pos, parent);
-		setProperty(pos, parent, PROP_IN, part == null ? false : part.getOutputToSide(pos2, parent, ForgeDirection.UNKNOWN));
+		setProperty(pos, parent, PROP_IN, part == null ? false : part.getOutputToSide(pos2, parent, null));
 
 		notifyNeighbours(pos, parent);
 		// notifyNeighbors analog for paired tunnel
-		if (part != null && getOutputToSide(pos, parent, ForgeDirection.UNKNOWN) != part.getProperty(pos2, parent, PROP_IN)) {
+		if (part != null && getOutputToSide(pos, parent, null) != part.getProperty(pos2, parent, PROP_IN)) {
 			// Unlike notifyNeighbors, nothing can be done here after disconnect from paired tunnel.
 			part.scheduleInputChange(pos2, parent);
 			part.markForUpdate(pos2, parent);
@@ -76,15 +73,15 @@ public class PartTunnel extends CircuitPart {
 	}
 
 	@Override
-	public boolean getOutputToSide(Vec2 pos, ICircuit parent, ForgeDirection side) {
+	public boolean getOutputToSide(Vec2i pos, ICircuit parent, EnumFacing side) {
 		boolean in = getProperty(pos, parent, PROP_IN);
-		if (side == ForgeDirection.UNKNOWN)
+		if (side == null)
 			return getInput(pos, parent) && !in;
 		return (getInput(pos, parent) || in) && !getInputFromSide(pos, parent, side);
 	}
 
 	@Override
-	public void onPlaced(Vec2 pos, ICircuit parent) {
+	public void onPlaced(Vec2i pos, ICircuit parent) {
 		setProperty(pos, parent, PROP_POS_X, 255);
 		setProperty(pos, parent, PROP_POS_Y, 255);
 		setProperty(pos, parent, PROP_IN, false);
@@ -92,7 +89,7 @@ public class PartTunnel extends CircuitPart {
 	}
 
 	// Used to update previously connected tunnel when required
-	private void dropConnected(Vec2 pos, ICircuit parent, Vec2 oldPos2) {
+	private void dropConnected(Vec2i pos, ICircuit parent, Vec2i oldPos2) {
 		if (isConnected(oldPos2)) {
 			CircuitPart cp = parent.getCircuitData().getPart(oldPos2);
 			if (cp instanceof PartTunnel) {
@@ -110,10 +107,10 @@ public class PartTunnel extends CircuitPart {
 	}
 
 	@Override
-	public void onChanged(Vec2 pos, ICircuit parent, int oldMeta) {
+	public void onChanged(Vec2i pos, ICircuit parent, int oldMeta) {
 		// Update previously connected tunnel, if required
-		Vec2 pos2 = getConnectedPos(pos, parent);
-		Vec2 oldPos2 = new Vec2(PROP_POS_X.get(oldMeta), PROP_POS_Y.get(oldMeta));
+		Vec2i pos2 = getConnectedPos(pos, parent);
+		Vec2i oldPos2 = new Vec2i(PROP_POS_X.get(oldMeta), PROP_POS_Y.get(oldMeta));
 		if (!pos2.equals(oldPos2))
 			dropConnected(pos, parent, oldPos2);
 		
@@ -121,23 +118,23 @@ public class PartTunnel extends CircuitPart {
 	}
 
 	@Override
-	public void onRemoved(Vec2 pos, ICircuit parent) {
+	public void onRemoved(Vec2i pos, ICircuit parent) {
 		// Update connected tunnel, if required
 		dropConnected(pos, parent, getConnectedPos(pos, parent));
 	}
 
 	@Override
-	public void renderPart(Vec2 pos, ICircuit parent, double x, double y, EnumRenderType type) {
-		Tessellator tes = Tessellator.instance;
+	public void renderPart(Vec2i pos, ICircuit parent, double x, double y, EnumRenderType type) {
+		RenderManager rm = RenderManager.getInstance();
 
-		RenderUtils.applyColorIRGBA(tes, Config.colorGreen);
-		CircuitPartRenderer.addQuad(x, y, 16, 4 * 16, 16, 16);
+		RenderUtils.applyColorIRGBA(rm, Config.colorGreen);
+		rm.addQuad(x, y, 16, 4 * 16, 16, 16);
 		if (getInput(pos, parent) || getProperty(pos, parent, PROP_IN)) {
-			RenderUtils.applyColorIRGBA(tes, Config.colorGreen);
+			RenderUtils.applyColorIRGBA(rm, Config.colorGreen);
 		} else {
-			RenderUtils.applyColorIRGBA(tes, Config.colorGreen, 0.4F);
+			RenderUtils.applyColorIRGBA(rm, Config.colorGreen, 0.4F);
 		}
-		CircuitPartRenderer.addQuad(x, y, 0, 4 * 16, 16, 16);
+		rm.addQuad(x, y, 0, 4 * 16, 16, 16);
 	}
 
 	@Override
@@ -146,7 +143,7 @@ public class PartTunnel extends CircuitPart {
 	}
 
 	@Override
-	public String getLocalizedName(Vec2 pos, ICircuit parent) {
+	public String getLocalizedName(Vec2i pos, ICircuit parent) {
 		String name = super.getLocalizedName(pos, parent);
 		if (!(parent instanceof CircuitRenderWrapper) && isConnected(getConnectedPos(pos, parent))) {
 			name += " (Linked)";
@@ -155,14 +152,14 @@ public class PartTunnel extends CircuitPart {
 	}
 
 	@Override
-	public void getCraftingCost(CraftingAmount amount, CircuitData parent, Vec2 pos) {
-		amount.add(new ItemAmount(Items.redstone, 0.1));
+	public void getCraftingCost(CraftingAmount amount, CircuitData parent, Vec2i pos) {
+		amount.add(new ItemAmount(Items.REDSTONE, 0.1));
 		amount.add(new ItemAmount(Content.itemSiliconDrop, 0.1));
 
 		int data = parent.getMeta(pos);
-		Vec2 end = new Vec2(PROP_POS_X.get(data), PROP_POS_Y.get(data));
+		Vec2i end = new Vec2i(PROP_POS_X.get(data), PROP_POS_Y.get(data));
 		if (isConnected(end)) {
-			amount.add(new ItemAmount(Items.redstone, 0.1 * pos.distanceTo(end)));
+			amount.add(new ItemAmount(Items.REDSTONE, 0.1 * pos.distanceTo(end)));
 		}
 	}
 }

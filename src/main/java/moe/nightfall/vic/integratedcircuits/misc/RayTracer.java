@@ -3,9 +3,9 @@ package moe.nightfall.vic.integratedcircuits.misc;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 
 public class RayTracer {
 	/**
@@ -15,15 +15,15 @@ public class RayTracer {
 	 * @param partialTicks
 	 * @return Vec3[] 0 = from, 1 = to
 	 */
-	public static Vec3[] getPlayerRay(EntityPlayer player, float partialTicks) {
-		Vec3 start = getPositionVector(player, partialTicks);
-		Vec3 look = player.getLook(partialTicks);
+	public static Vec3d[] getPlayerRay(EntityPlayer player, float partialTicks) {
+		Vec3d start = getPositionVector(player, partialTicks);
+		Vec3d look = player.getLook(partialTicks);
 		double reach = getBlockReachDistance(player);
-		Vec3 end = start.addVector(look.xCoord * reach, look.yCoord * reach, look.zCoord * reach);
-		return new Vec3[] { start, end };
+		Vec3d end = start.addVector(look.xCoord * reach, look.yCoord * reach, look.zCoord * reach);
+		return new Vec3d[] { start, end };
 	}
 
-	public static Vec3 getPositionVector(EntityPlayer player, float partialTicks) {
+	public static Vec3d getPositionVector(EntityPlayer player, float partialTicks) {
 		double d0 = player.prevPosX + (player.posX - player.prevPosX) * partialTicks;
 		double d1 = player.prevPosY + (player.posY - player.prevPosY) * partialTicks + player.getEyeHeight();
 		double d2 = player.prevPosZ + (player.posZ - player.prevPosZ) * partialTicks;
@@ -31,7 +31,7 @@ public class RayTracer {
 		if (!(player instanceof EntityPlayerMP))
 			d1 -= player.getDefaultEyeHeight();
 
-		return Vec3.createVectorHelper(d0, d1, d2);
+		return new Vec3d(d0, d1, d2);
 	}
 
 	/**
@@ -43,35 +43,35 @@ public class RayTracer {
 	 */
 	public static double getBlockReachDistance(EntityPlayer player) {
 		if (player instanceof EntityPlayerMP)
-			return ((EntityPlayerMP) player).theItemInWorldManager.getBlockReachDistance();
+			return ((EntityPlayerMP)player).interactionManager.getBlockReachDistance();
 		return Minecraft.getMinecraft().playerController.getBlockReachDistance();
 	}
 
 	/**
 	 * Get the nearest intersecting {@link AxisAlignedBB}, the
 	 * {@link AxisAlignedBB} selected is returned as
-	 * {@link MovingObjectPosition#hitInfo}. Returns {@code null} if none of the
+	 * {@link RayTraceResult#hitInfo}. Returns {@code null} if none of the
 	 * {@link AxisAlignedBB AxisAligensBBs} intersect.
 	 * 
 	 * @param player
 	 * @param partialTicks
 	 * @param alignedAABBs
-	 * @return {@link MovingObjectPosition} or {@code null}
+	 * @return {@link RayTraceResult} or {@code null}
 	 */
-	public static MovingObjectPosition rayTraceAABB(EntityPlayer player, float partialTicks,
-			AxisAlignedBB... alignedAABBs) {
+	public static RayTraceResult rayTraceAABB(EntityPlayer player, float partialTicks,
+											  AxisAlignedBB... alignedAABBs) {
 		if (alignedAABBs.length == 0)
 			return null;
-		MovingObjectPosition nearest = null;
+		RayTraceResult nearest = null;
 
-		Vec3[] playerRay = getPlayerRay(player, partialTicks);
-		Vec3 start = playerRay[0];
-		Vec3 end = playerRay[1];
+		Vec3d[] playerRay = getPlayerRay(player, partialTicks);
+		Vec3d start = playerRay[0];
+		Vec3d end = playerRay[1];
 
 		for (AxisAlignedBB aabb : alignedAABBs) {
 			if (aabb == null)
 				continue;
-			MovingObjectPosition pos = aabb.calculateIntercept(start, end);
+			RayTraceResult pos = aabb.calculateIntercept(start, end);
 			if (pos == null)
 				continue;
 			if (nearest == null || pos.hitVec.distanceTo(start) < nearest.hitVec.distanceTo(start)) {
@@ -82,12 +82,12 @@ public class RayTracer {
 		return nearest;
 	}
 
-	public static MovingObjectPosition rayTrace(EntityPlayer player, float partialTicks) {
-		Vec3[] playerRay = getPlayerRay(player, partialTicks);
-		Vec3 start = playerRay[0];
-		Vec3 end = playerRay[1];
+	public static RayTraceResult rayTrace(EntityPlayer player, float partialTicks) {
+		Vec3d[] playerRay = getPlayerRay(player, partialTicks);
+		Vec3d start = playerRay[0];
+		Vec3d end = playerRay[1];
 
-		MovingObjectPosition target = player.worldObj.rayTraceBlocks(start, end);
+		RayTraceResult target = player.worldObj.rayTraceBlocks(start, end);
 		return target;
 	}
 }

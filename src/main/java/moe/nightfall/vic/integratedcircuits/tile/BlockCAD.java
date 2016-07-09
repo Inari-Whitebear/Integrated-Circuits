@@ -1,71 +1,70 @@
 package moe.nightfall.vic.integratedcircuits.tile;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
 import moe.nightfall.vic.integratedcircuits.Constants;
 import moe.nightfall.vic.integratedcircuits.DiskDrive;
 import moe.nightfall.vic.integratedcircuits.DiskDrive.IDiskDrive;
 import moe.nightfall.vic.integratedcircuits.IntegratedCircuits;
-import moe.nightfall.vic.integratedcircuits.client.Resources;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
-import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.IIcon;
-import net.minecraft.util.MathHelper;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
 
-public class BlockCAD extends BlockContainer {
+
+public class BlockCAD extends Block {
 	public BlockCAD() {
-		super(Material.iron);
-		setBlockName(Constants.MOD_ID + ".pcblayoutcad");
+		super(Material.IRON);
+		setRegistryName("pcblayoutcad");
+		setUnlocalizedName(Constants.MOD_ID + ".pcblayoutcad");
 		setCreativeTab(IntegratedCircuits.creativeTab);
 		setHardness(2F);
 	}
 
 	@Override
-	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int par6, float par7,
-			float par8, float par9) {
+	public boolean onBlockActivated(World world, BlockPos blockPos, IBlockState blockState, EntityPlayer player, EnumHand hand, ItemStack heldItem, EnumFacing side, float hitX, float hitY, float hitZ) {
 		if (!world.isRemote) {
-			TileEntityCAD te = (TileEntityCAD) world.getTileEntity(x, y, z);
+			TileEntityCAD te = (TileEntityCAD) world.getTileEntity(blockPos);
 			int rotation = te.rotation;
-			boolean canInteract = rotation == 3 && par6 == 4 || rotation == 0 && par6 == 2 || rotation == 1
-					&& par6 == 5 || rotation == 2 && par6 == 3;
+			boolean canInteract = rotation == 3 && side.ordinal() == 4 || rotation == 0 && side.ordinal() == 2 || rotation == 1
+					&& side.ordinal() == 5 || rotation == 2 && side.ordinal() == 3;
 			if (canInteract)
-				player.openGui(IntegratedCircuits.instance, 0, world, x, y, z);
+				player.openGui(IntegratedCircuits.instance, 0, world, blockPos.getX(), blockPos.getY(), blockPos.getZ());
 			return canInteract;
 		}
 		return true;
 	}
 
 	@Override
-	public void onNeighborBlockChange(World world, int x, int y, int z, Block block) {
-		TileEntityCAD te = (TileEntityCAD) world.getTileEntity(x, y, z);
+	public void onNeighborBlockChange(World world, BlockPos blockPos, IBlockState blockState, Block neighborBlock) {
+		TileEntityCAD te = (TileEntityCAD) world.getTileEntity(blockPos);
 		if (te != null) {
 			te.onNeighborBlockChange();
 		}
 	}
 
 	@Override
-	public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase entity, ItemStack stack) {
+	public void onBlockPlacedBy(World world, BlockPos blockPos, IBlockState blockState, EntityLivingBase entity, ItemStack stack) {
 		int rotation = MathHelper.floor_double((double) (entity.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
-		TileEntityCAD te = (TileEntityCAD) world.getTileEntity(x, y, z);
+		TileEntityCAD te = (TileEntityCAD) world.getTileEntity(blockPos);
 		if (te != null) {
 			te.rotation = rotation;
 		}
 	}
 
 	@Override
-	public void onBlockPreDestroy(World world, int x, int y, int z, int meta) {
-		DiskDrive.dropFloppy((IDiskDrive) world.getTileEntity(x, y, z), world, x, y, z);
+	public void breakBlock(World world, BlockPos blockPos, IBlockState blockState) {
+		DiskDrive.dropFloppy((IDiskDrive) world.getTileEntity(blockPos), world, blockPos.getX(), blockPos.getY(), blockPos.getZ());
 	}
 
+	/*
 	@Override
 	@SideOnly(Side.CLIENT)
 	public IIcon getIcon(int side, int meta) {
@@ -93,26 +92,32 @@ public class BlockCAD extends BlockContainer {
 			return on ? Resources.ICON_CAD_BACK_ON : Resources.ICON_CAD_BACK_OFF;
 
 		return Resources.ICON_CAD_SIDE;
-	}
+	}*/
 
 	@Override
-	public TileEntity createNewTileEntity(World world, int meta) {
+	public TileEntity createTileEntity(World world, IBlockState blockState) {
 		TileEntityCAD te = new TileEntityCAD();
 		te.setup(32);
 		return te;
 	}
 
 	@Override
-	public boolean isOpaqueCube() {
+	public boolean hasTileEntity(IBlockState state) {
+		return true;
+	}
+
+	@Override
+	public boolean isOpaqueCube(IBlockState blockState) {
 		return false;
 	}
 
+	/*
 	@Override
 	public void registerBlockIcons(IIconRegister ir) {
-	}
+	}*/
 
 	@Override
-	public boolean rotateBlock(World world, int x, int y, int z, ForgeDirection axis) {
-		return ((TileEntityContainer) world.getTileEntity(x, y, z)).rotate();
+	public boolean rotateBlock(World world, BlockPos blockPos, EnumFacing side) {
+		return ((TileEntityContainer) world.getTileEntity(blockPos)).rotate();
 	}
 }

@@ -5,7 +5,8 @@ import java.io.IOException;
 import moe.nightfall.vic.integratedcircuits.tile.TileEntityAssembler;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.PacketBuffer;
-import cpw.mods.fml.relauncher.Side;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class PacketAssemblerStart extends PacketTileEntity<PacketAssemblerStart> {
 	private byte amount;
@@ -32,7 +33,7 @@ public class PacketAssemblerStart extends PacketTileEntity<PacketAssemblerStart>
 
 	@Override
 	public void process(EntityPlayer player, Side side) {
-		TileEntityAssembler te = (TileEntityAssembler) player.worldObj.getTileEntity(xCoord, yCoord, zCoord);
+		TileEntityAssembler te = (TileEntityAssembler) player.worldObj.getTileEntity(new BlockPos(xCoord, yCoord, zCoord));
 		if (te == null)
 			return;
 		if (side == Side.SERVER) {
@@ -43,7 +44,7 @@ public class PacketAssemblerStart extends PacketTileEntity<PacketAssemblerStart>
 		} else if (side == Side.CLIENT) {
 			te.laserHelper.reset();
 			te.laserHelper.isRunning = true;
-			te.getWorldObj().markBlockRangeForRenderUpdate(xCoord, yCoord, zCoord, xCoord, yCoord, zCoord);
+			te.getWorld().markBlockRangeForRenderUpdate(xCoord, yCoord, zCoord, xCoord, yCoord, zCoord);
 			te.excMatrix = new boolean[te.size][te.size];
 			if (amount > 0)
 				te.isOccupied = true;

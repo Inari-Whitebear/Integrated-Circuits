@@ -1,9 +1,13 @@
 package moe.nightfall.vic.integratedcircuits.tile;
 
-import buildcraft.api.tiles.IControllable;
-import buildcraft.api.tiles.IHasWork;
-import cpw.mods.fml.common.Optional.Interface;
-import cpw.mods.fml.common.Optional.InterfaceList;
+//import buildcraft.api.tiles.IControllable;
+//import buildcraft.api.tiles.IHasWork;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ITickable;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraftforge.fml.common.Optional.Interface;
+import net.minecraftforge.fml.common.Optional.InterfaceList;
 import moe.nightfall.vic.integratedcircuits.Content;
 import moe.nightfall.vic.integratedcircuits.DiskDrive.IDiskDrive;
 import moe.nightfall.vic.integratedcircuits.LaserHelper;
@@ -27,14 +31,13 @@ import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.common.util.Constants.NBT;
-import net.minecraftforge.common.util.ForgeDirection;
 
 @InterfaceList({ @Interface(iface = "buildcraft.api.tiles.IControllable", modid = "BuildCraft|Core"),
 		@Interface(iface = "buildcraft.api.tiles.IHasWork", modid = "BuildCraft|Core") })
-public class TileEntityAssembler extends TileEntityContainer implements IDiskDrive, ISidedInventory, IOptionsProvider,
-		IHasWork, IControllable {
+public class TileEntityAssembler extends TileEntityContainer implements IDiskDrive, ISidedInventory, IOptionsProvider, ITickable //FIXME use capabilities
+		/* FIXME reimplement IHasWork, IControllable */ {
 	public static final int IDLE = 0, RUNNING = 1, OUT_OF_MATERIALS = 2,
 			OUT_OF_PCB = 3;
 	public static final int SETTING_PULL = 0, SETTING_REDSTONE = 1;
@@ -65,7 +68,7 @@ public class TileEntityAssembler extends TileEntityContainer implements IDiskDri
 	private OptionSet<TileEntityAssembler> optionSet = new OptionSet<TileEntityAssembler>(this);
 
 	@Override
-	public void updateEntity() {
+	public void update() {
 		if (worldObj.isRemote && texture != null)
 			TileEntityAssemblerRenderer.scheduleFramebuffer(this);
 		if (worldObj.isRemote)
@@ -78,7 +81,7 @@ public class TileEntityAssembler extends TileEntityContainer implements IDiskDri
 			laserHelper.update();
 
 		if (output == 0)
-			getWorldObj().notifyBlockChange(xCoord, yCoord, zCoord, getBlockType());
+			worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 0); // FIXME flags
 		if (output >= 0)
 			output--;
 
@@ -104,7 +107,7 @@ public class TileEntityAssembler extends TileEntityContainer implements IDiskDri
 	}
 
 	public void onNeighborBlockChange() {
-		int nPower = worldObj.getStrongestIndirectPower(xCoord, yCoord, zCoord);
+		int nPower = worldObj.isBlockIndirectlyGettingPowered(pos);
 		if (nPower != power) {
 			boolean o = power > 0, n = nPower > 0;
 			int rsmode = getOptionSet().getInt(SETTING_REDSTONE);
@@ -124,7 +127,7 @@ public class TileEntityAssembler extends TileEntityContainer implements IDiskDri
 		if (statusCode != status) {
 			statusCode = status;
 			if (!worldObj.isRemote)
-				worldObj.addBlockEvent(xCoord, yCoord, zCoord, getBlockType(), 1, status);
+				worldObj.addBlockEvent(pos, getBlockType(), 1, status);
 		}
 	}
 
@@ -165,7 +168,7 @@ public class TileEntityAssembler extends TileEntityContainer implements IDiskDri
 		if (!requestCircuitPlayload())
 			setQueueSize((byte) 0);
 		position = 0;
-		worldObj.addBlockEvent(xCoord, yCoord, zCoord, getBlockType(), 2, position);
+		worldObj.addBlockEvent(pos, getBlockType(), 2, position);
 	}
 
 	private boolean requestCircuitPlayload() {
@@ -180,8 +183,8 @@ public class TileEntityAssembler extends TileEntityContainer implements IDiskDri
 			laserHelper.reset();
 			laserHelper.start();
 			updateStatus(RUNNING);
-			CommonProxy.networkWrapper.sendToDimension(new PacketAssemblerStart(xCoord, yCoord, zCoord, queue),
-					worldObj.provider.dimensionId);
+			CommonProxy.networkWrapper.sendToDimension(new PacketAssemblerStart(pos.getX(), pos.getY(), pos.getZ(), queue),
+					worldObj.provider.getDimension());
 			return true;
 		}
 		return false;
@@ -215,8 +218,8 @@ public class TileEntityAssembler extends TileEntityContainer implements IDiskDri
 		if (getStatus() != RUNNING && getStatus() != OUT_OF_MATERIALS) {
 			laserHelper.reset();
 			updateStatus(IDLE);
-			CommonProxy.networkWrapper.sendToDimension(new PacketAssemblerStart(xCoord, yCoord, zCoord, queue),
-					worldObj.provider.dimensionId);
+			CommonProxy.networkWrapper.sendToDimension(new PacketAssemblerStart(pos.getX(), pos.getY(), pos.getZ(), queue),
+					worldObj.provider.getDimension());
 		}
 	}
 
@@ -230,10 +233,10 @@ public class TileEntityAssembler extends TileEntityContainer implements IDiskDri
 			NBTTagCompound comp = new NBTTagCompound();
 			comp.setTag("circuit", cdata.writeToNBTRaw(new NBTTagCompound()));
 			contents[1].setTagCompound(comp);
-			worldObj.addBlockEvent(xCoord, yCoord, zCoord, getBlockType(), 2, ++position);
+			worldObj.addBlockEvent(pos, getBlockType(), 2, ++position);
 			// Give off a redstone pulse
 			output = 2;
-			worldObj.notifyBlockChange(xCoord, yCoord, zCoord, getBlockType());
+			worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 0); //FIXME flags and stuff
 		}
 		if (position == queue || queue == 0) {
 			queue = 0;
@@ -284,11 +287,6 @@ public class TileEntityAssembler extends TileEntityContainer implements IDiskDri
 	}
 
 	@Override
-	public ItemStack getStackInSlotOnClosing(int id) {
-		return getStackInSlot(id);
-	}
-
-	@Override
 	public void setInventorySlotContents(int id, ItemStack stack) {
 		boolean change = !ItemStack.areItemStacksEqual(contents[id], stack);
 		contents[id] = stack;
@@ -304,17 +302,17 @@ public class TileEntityAssembler extends TileEntityContainer implements IDiskDri
 		if (id > 8 && id < 13)
 			laserHelper.createLaser(id - 9, getStackInSlot(id));
 		else if (id == 1)
-			CommonProxy.networkWrapper.sendToDimension(new PacketAssemblerChangeItem(xCoord, yCoord, zCoord,
-					getStackInSlot(id) != null), worldObj.provider.dimensionId);
+			CommonProxy.networkWrapper.sendToDimension(new PacketAssemblerStart(pos.getX(), pos.getY(), pos.getZ(), queue),
+					worldObj.provider.getDimension());
 	}
 
 	@Override
-	public String getInventoryName() {
+	public ITextComponent getDisplayName() {
 		return null;
 	}
 
 	@Override
-	public boolean hasCustomInventoryName() {
+	public boolean hasCustomName() {
 		return false;
 	}
 
@@ -326,7 +324,7 @@ public class TileEntityAssembler extends TileEntityContainer implements IDiskDri
 	@Override
 	public AxisAlignedBB getBoundingBox() {
 		return MiscUtils.getRotatedInstance(
-				AxisAlignedBB.getBoundingBox(1 / 16F, 1 / 16F, -1 / 16F, 13 / 16F, 3 / 16F, 1 / 16F), rotation);
+				new AxisAlignedBB(1 / 16F, 1 / 16F, -1 / 16F, 13 / 16F, 3 / 16F, 1 / 16F), rotation.getAxis());
 	}
 
 	@Override
@@ -338,7 +336,7 @@ public class TileEntityAssembler extends TileEntityContainer implements IDiskDri
 		for (ItemStack stack : contents) {
 			if (stack == null)
 				continue;
-			worldObj.spawnEntityInWorld(new EntityItem(worldObj, xCoord, yCoord, zCoord, stack));
+			worldObj.spawnEntityInWorld(new EntityItem(worldObj, pos.getX(), pos.getY(), pos.getZ(), stack));
 		}
 	}
 
@@ -346,8 +344,8 @@ public class TileEntityAssembler extends TileEntityContainer implements IDiskDri
 	public void setDisk(ItemStack stack) {
 		setInventorySlotContents(0, stack);
 		if (!worldObj.isRemote)
-			CommonProxy.networkWrapper.sendToDimension(new PacketFloppyDisk(xCoord, yCoord, zCoord, stack),
-					worldObj.provider.dimensionId);
+			CommonProxy.networkWrapper.sendToDimension(new PacketAssemblerStart(pos.getX(), pos.getY(), pos.getZ(), queue),
+					worldObj.provider.getDimension());
 		loadMatrixFromDisk();
 		if (worldObj.isRemote && Minecraft.getMinecraft().currentScreen instanceof GuiCAD) {
 			cdata.calculateCost();
@@ -429,7 +427,7 @@ public class TileEntityAssembler extends TileEntityContainer implements IDiskDri
 
 			NBTTagList idlist = circuit.getTagList("id", NBT.TAG_INT_ARRAY);
 			for (int i = 0; i < idlist.tagCount(); i++)
-				refMatrix[i] = idlist.func_150306_c(i);
+				refMatrix[i] = idlist.getIntArrayAt(i);
 		}
 	}
 
@@ -456,22 +454,21 @@ public class TileEntityAssembler extends TileEntityContainer implements IDiskDri
 	private static final int[] accessibleSlots = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
 	@Override
-	public int[] getAccessibleSlotsFromSide(int side) {
+	public int[] getSlotsForFace(EnumFacing side) {
 		if (getConnectionOnSide(side) > -1)
 			return accessibleSlots;
 		return new int[0];
 	}
 
-	private int getConnectionOnSide(int side) {
-		ForgeDirection dir = ForgeDirection.getOrientation(side);
-		if (dir == ForgeDirection.UP)
+	private int getConnectionOnSide(EnumFacing side) {
+		if (side == EnumFacing.UP)
 			return -1;
-		else if (dir == ForgeDirection.DOWN)
+		else if (side == EnumFacing.DOWN)
 			return 0;
-		dir = MiscUtils.rotn(ForgeDirection.getOrientation(side), -rotation);
-		if (dir == ForgeDirection.SOUTH)
+		side = side.rotateAround(rotation.getAxis()); // FIXME check this
+		if (side == EnumFacing.SOUTH)
 			return 1;
-		else if (dir != ForgeDirection.NORTH)
+		else if (side != EnumFacing.NORTH)
 			return 0;
 		return -1;
 	}
@@ -486,22 +483,23 @@ public class TileEntityAssembler extends TileEntityContainer implements IDiskDri
 	}
 
 	@Override
-	public boolean canInsertItem(int slot, ItemStack stack, int side) {
-		int con = getConnectionOnSide(side);
+	public boolean canInsertItem(int index, ItemStack itemStackIn, EnumFacing direction) {
+		int con = getConnectionOnSide(direction);
 		return con == 0;
 	}
 
 	@Override
-	public boolean canExtractItem(int slot, ItemStack stack, int side) {
-		int con = getConnectionOnSide(side);
+	public boolean canExtractItem(int index, ItemStack stack, EnumFacing direction) {
+		int con = getConnectionOnSide(direction);
 		boolean isPCB = stack.getItem() == Content.itemPCB && stack.getItemDamage() == 1;
 		if (con == 0)
-			return slot != 1 && !isPCB;
+			return index != 1 && !isPCB;
 		else if (con == 1)
 			return isPCB;
 		return false;
 	}
 
+	/* FIXME reimplement
 	@Override
 	public Mode getControlMode() {
 		if (powerOverride || isPowered())
@@ -526,11 +524,11 @@ public class TileEntityAssembler extends TileEntityContainer implements IDiskDri
 	@Override
 	public boolean hasWork() {
 		return getStatus() != IDLE;
-	}
+	}*/
 
 	public boolean rotate() {
-		this.rotation = rotation + 1 & 3;
-		worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+		rotation = rotation.rotateY();
+		worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 0); //FIXME flags
 		return true;
 	}
 }

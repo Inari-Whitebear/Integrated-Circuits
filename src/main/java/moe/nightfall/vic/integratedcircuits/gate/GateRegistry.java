@@ -14,7 +14,6 @@ import moe.nightfall.vic.integratedcircuits.api.gate.ISocket;
 import moe.nightfall.vic.integratedcircuits.api.gate.ISocketWrapper;
 import moe.nightfall.vic.integratedcircuits.client.SocketRenderer;
 import moe.nightfall.vic.integratedcircuits.proxy.ClientProxy;
-import moe.nightfall.vic.integratedcircuits.tile.FMPartSocket;
 import moe.nightfall.vic.integratedcircuits.tile.TileEntitySocket;
 
 import com.google.common.collect.BiMap;
@@ -24,11 +23,11 @@ import com.google.common.collect.Sets;
 
 import net.minecraft.block.Block;
 
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.Optional.Interface;
-import cpw.mods.fml.common.Optional.InterfaceList;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.Optional.Interface;
+import net.minecraftforge.fml.common.Optional.InterfaceList;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class GateRegistry implements IGateRegistry {
 	
@@ -165,8 +164,6 @@ public class GateRegistry implements IGateRegistry {
 			return ioProviderRegistry.get(Type.TILE);
 		if (clazz == Block.class)
 			return ioProviderRegistry.get(Type.BLOCK);
-		if (IntegratedCircuits.isFMPLoaded && clazz == FMPartSocket.class)
-			return ioProviderRegistry.get(Type.TILE_FMP);
 		return null;
 	}
 

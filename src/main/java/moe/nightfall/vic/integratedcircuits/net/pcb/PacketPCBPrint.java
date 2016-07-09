@@ -1,7 +1,7 @@
 package moe.nightfall.vic.integratedcircuits.net.pcb;
 
-import codechicken.lib.vec.BlockCoord;
-import cpw.mods.fml.relauncher.Side;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.relauncher.Side;
 import moe.nightfall.vic.integratedcircuits.net.PacketTileEntity;
 import moe.nightfall.vic.integratedcircuits.tile.TileEntityCAD;
 import moe.nightfall.vic.integratedcircuits.tile.TileEntityPrinter;
@@ -18,10 +18,10 @@ public class PacketPCBPrint extends PacketTileEntity<PacketPCBPrint> {
 
 	@Override
 	public void process(EntityPlayer player, Side side) {
-		TileEntityCAD cad = (TileEntityCAD) player.worldObj.getTileEntity(xCoord, yCoord, zCoord);
+		TileEntityCAD cad = (TileEntityCAD) player.worldObj.getTileEntity(new BlockPos(xCoord, yCoord, zCoord));
 		if (cad != null && cad.isPrinterConnected()) {
-			BlockCoord pl = new BlockCoord(cad).offset(cad.printerLocation().ordinal());
-			TileEntityPrinter printer = (TileEntityPrinter) player.worldObj.getTileEntity(pl.x, pl.y, pl.z);
+			BlockPos pl = new BlockPos(cad.getPos()).offset(cad.printerLocation());
+			TileEntityPrinter printer = (TileEntityPrinter) player.worldObj.getTileEntity(pl);
 			if (printer != null) {
 				printer.print(cad.getCircuitData());
 			}

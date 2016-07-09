@@ -2,15 +2,15 @@ package moe.nightfall.vic.integratedcircuits.cp.part.latch;
 
 import java.util.ArrayList;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import moe.nightfall.vic.integratedcircuits.misc.Vec2i;
+import net.minecraft.util.EnumFacing;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import moe.nightfall.vic.integratedcircuits.cp.CircuitPartRenderer;
 import moe.nightfall.vic.integratedcircuits.cp.ICircuit;
 import moe.nightfall.vic.integratedcircuits.cp.part.PartCPGate;
-import moe.nightfall.vic.integratedcircuits.misc.Vec2;
 import moe.nightfall.vic.integratedcircuits.misc.PropertyStitcher.BooleanProperty;
 import net.minecraft.client.resources.I18n;
-import net.minecraftforge.common.util.ForgeDirection;
 
 public class PartToggleLatch extends PartCPGate {
 	public final BooleanProperty PROP_OUT = new BooleanProperty("OUT", stitcher);
@@ -18,7 +18,7 @@ public class PartToggleLatch extends PartCPGate {
 	public final BooleanProperty PROP_OLD_SOUTH = new BooleanProperty("OLD_SOUTH", stitcher);
 
 	@Override
-	public void onClick(Vec2 pos, ICircuit parent, int button, boolean ctrl) {
+	public void onClick(Vec2i pos, ICircuit parent, int button, boolean ctrl) {
 		super.onClick(pos, parent, button, ctrl);
 		if (button == 0 && ctrl) {
 			invertProperty(pos, parent, PROP_OUT);
@@ -27,13 +27,13 @@ public class PartToggleLatch extends PartCPGate {
 	}
 
 	@Override
-	public void onInputChange(Vec2 pos, ICircuit parent) {
+	public void onInputChange(Vec2i pos, ICircuit parent) {
 		scheduleTick(pos, parent);
 	}
 
 	@Override
-	public void onScheduledTick(Vec2 pos, ICircuit parent) {
-		ForgeDirection north = toExternal(pos, parent, ForgeDirection.NORTH);
+	public void onScheduledTick(Vec2i pos, ICircuit parent) {
+		EnumFacing north = toExternal(pos, parent, EnumFacing.NORTH);
 		boolean northIn = getInputFromSide(pos, parent, north);
 		boolean southIn = getInputFromSide(pos, parent, north.getOpposite());
 		if (northIn && !getProperty(pos, parent, PROP_OLD_NORTH))
@@ -46,23 +46,23 @@ public class PartToggleLatch extends PartCPGate {
 	}
 
 	@Override
-	public boolean getOutputToSide(Vec2 pos, ICircuit parent, ForgeDirection side) {
-		ForgeDirection s2 = toInternal(pos, parent, side);
-		if (s2 == ForgeDirection.EAST)
+	public boolean getOutputToSide(Vec2i pos, ICircuit parent, EnumFacing side) {
+		EnumFacing s2 = toInternal(pos, parent, side);
+		if (s2 == EnumFacing.EAST)
 			return getProperty(pos, parent, PROP_OUT);
-		if (s2 == ForgeDirection.WEST)
+		if (s2 == EnumFacing.WEST)
 			return !getProperty(pos, parent, PROP_OUT);
 		return false;
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public Vec2 getTextureOffset(Vec2 pos, ICircuit parent, double x, double y, CircuitPartRenderer.EnumRenderType type) {
-		return new Vec2(8, 1);
+	public Vec2i getTextureOffset(Vec2i pos, ICircuit parent, double x, double y, CircuitPartRenderer.EnumRenderType type) {
+		return new Vec2i(8, 1);
 	}
 
 	@Override
-	public ArrayList<String> getInformation(Vec2 pos, ICircuit parent, boolean edit, boolean ctrlDown) {
+	public ArrayList<String> getInformation(Vec2i pos, ICircuit parent, boolean edit, boolean ctrlDown) {
 		ArrayList<String> text = super.getInformation(pos, parent, edit, ctrlDown);
 		if (edit && ctrlDown)
 			text.add(I18n.format("gui.integratedcircuits.cad.toggle"));

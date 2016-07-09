@@ -30,6 +30,11 @@ public class RecipeDyeable implements IRecipe {
 	}
 
 	@Override
+	public ItemStack[] getRemainingItems(InventoryCrafting inv) {
+		return new ItemStack[0];
+	}
+
+	@Override
 	public boolean matches(InventoryCrafting crafting, World world) {
 		ItemStack colorStack = null;
 		color = -1;

@@ -7,21 +7,25 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Objects;
 
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.Maps;
 
-import codechicken.lib.vec.BlockCoord;
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.eventhandler.Event.Result;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
-import cpw.mods.fml.common.gameevent.TickEvent;
-import cpw.mods.fml.common.gameevent.TickEvent.Phase;
-import cpw.mods.fml.common.network.NetworkRegistry;
-import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
-import cpw.mods.fml.relauncher.Side;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.eventhandler.Event.Result;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import net.minecraftforge.fml.relauncher.Side;
 import moe.nightfall.vic.integratedcircuits.Config;
 import moe.nightfall.vic.integratedcircuits.Constants;
 import moe.nightfall.vic.integratedcircuits.Content;
@@ -59,15 +63,12 @@ import moe.nightfall.vic.integratedcircuits.net.pcb.PacketPCBUpdate;
 import moe.nightfall.vic.integratedcircuits.tile.TileEntityAssembler;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.event.ClickEvent;
-import net.minecraft.event.HoverEvent;
+import net.minecraft.util.text.event.ClickEvent;
+import net.minecraft.util.text.event.HoverEvent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -117,17 +118,17 @@ public class CommonProxy {
 		AbstractPacket.registerPacket(PacketDataStream.class, Side.CLIENT, 17);
 	}
 
-	public synchronized MCDataOutputImpl addStream(World world, BlockCoord crd, int side) {
+	public synchronized MCDataOutputImpl addStream(World world, BlockPos crd, EnumFacing side) {
 		if (world.isRemote)
 			throw new IllegalArgumentException("Cannot use getWriteStream on a client world");
-		SidedBlockCoord scrd = new SidedBlockCoord(crd.x, crd.y, crd.z, side);
+		SidedBlockCoord scrd = new SidedBlockCoord(crd.getX(), crd.getY(), crd.getZ(), side);
 		if (!out.containsKey(world))
 			out.put(world, new HashMap<SidedBlockCoord, MCDataOutputImpl>());
 		HashMap<SidedBlockCoord, MCDataOutputImpl> map = out.get(world);
 
 		if (map.containsKey(scrd))
 			CommonProxy.networkWrapper.sendToDimension(new PacketDataStream(map.remove(scrd), scrd.x, scrd.y, scrd.z,
-					scrd.side), world.provider.dimensionId);
+					scrd.side), world.provider.getDimension());
 
 		MCDataOutputImpl stream = new MCDataOutputImpl(new ByteArrayOutputStream());
 		map.put(scrd, stream);
@@ -144,7 +145,7 @@ public class CommonProxy {
 				for (Entry<SidedBlockCoord, MCDataOutputImpl> entry : map.entrySet()) {
 					SidedBlockCoord crd = entry.getKey();
 					CommonProxy.networkWrapper.sendToDimension(new PacketDataStream(map.get(crd), crd.x, crd.y, crd.z,
-							crd.side), world.provider.dimensionId);
+							crd.side), world.provider.getDimension());
 				}
 				map.clear();
 			}
@@ -152,9 +153,10 @@ public class CommonProxy {
 	}
 
 	private static class SidedBlockCoord {
-		public int x, y, z, side;
+		public int x, y, z;
+		public EnumFacing side;
 
-		public SidedBlockCoord(int x, int y, int z, int side) {
+		public SidedBlockCoord(int x, int y, int z, EnumFacing side) {
 			this.x = x;
 			this.y = y;
 			this.z = z;
@@ -182,66 +184,69 @@ public class CommonProxy {
 	@SubscribeEvent
 	public void onPlayerJoined(PlayerLoggedInEvent event) {
 		if (Config.showStartupMessage) {
-			ChatComponentText text = new ChatComponentText(
+			TextComponentString text = new TextComponentString(
 					"[Integrated Circuits] This is an extremely early alpha version so please report any bugs occuring to the ");
-			ChatComponentText url = new ChatComponentText("GitHub");
-			url.getChatStyle().setUnderlined(true);
-			url.getChatStyle().setColor(EnumChatFormatting.BLUE);
-			url.getChatStyle()
-				.setChatHoverEvent(
-						new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText(
+			TextComponentString url = new TextComponentString("GitHub");
+			url.getStyle().setUnderlined(true);
+			url.getStyle().setColor(TextFormatting.BLUE);
+			url.getStyle()
+				.setHoverEvent(
+						new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentString(
 								"Click to visit ICs GitHub repo")));
-			url.getChatStyle().setChatClickEvent(
+			url.getStyle().setClickEvent(
 					new ClickEvent(ClickEvent.Action.OPEN_URL, "https://github.com/Victorious3/Integrated-Circuits"));
 			text.appendSibling(url);
 			text.appendText(" repo.");
-			if (event.player.canCommandSenderUseCommand(MinecraftServer.getServer().getOpPermissionLevel(), null))
+
+			if (event.player.canCommandSenderUseCommand(event.player.getEntityWorld().getMinecraftServer().getOpPermissionLevel(), null))
 				text.appendText(" You can disable this message by changing the config file. Thanks for your attention.");
 			event.player.addChatComponentMessage(text);
 		}
 	}
 
 	@SubscribeEvent
-	public void onPlayerInteract(PlayerInteractEvent event) {
-		if (event.action != Action.RIGHT_CLICK_BLOCK)
+	public void onPlayerInteract(PlayerInteractEvent.RightClickBlock event) {
+		//if (event.action != Action.RIGHT_CLICK_BLOCK)
+//			return;
+
+		Block block = event.getWorld().getBlockState(event.getPos()).getBlock();
+		if (!(block.hasTileEntity(event.getWorld().getBlockState(event.getPos()))))
 			return;
-		Block block = event.world.getBlock(event.x, event.y, event.z);
-		if (!(block.hasTileEntity(event.world.getBlockMetadata(event.x, event.y, event.z))))
-			return;
-		TileEntity te = (TileEntity) event.world.getTileEntity(event.x, event.y, event.z);
+		TileEntity te = (TileEntity) event.getWorld().getTileEntity(event.getPos());
 
 		if (te instanceof IDiskDrive) {
 			IDiskDrive drive = (IDiskDrive) te;
 
-			ItemStack stack = event.entityPlayer.getCurrentEquippedItem();
 
-			MovingObjectPosition target = RayTracer.rayTrace(event.entityPlayer, 1F);
+			ItemStack stack = event.getEntityPlayer().getHeldItem(event.getHand());
+
+			RayTraceResult target = RayTracer.rayTrace(event.getEntityPlayer(), 1F);
 			if (target == null)
 				return;
-			AxisAlignedBB box = DiskDrive.getDiskDriveBoundingBox(drive, event.x, event.y, event.z, target.hitVec);
+			AxisAlignedBB box = DiskDrive.getDiskDriveBoundingBox(drive, event.getPos().getX(), event.getPos().getY(), event.getPos().getZ(), target.hitVec);
 			if (box != null) {
-				if (!event.world.isRemote) {
+				if (!event.getWorld().isRemote) {
 					if (stack == null) {
 						ItemStack floppy = drive.getDisk();
 						drive.setDisk(null);
-						event.entityPlayer.setCurrentItemOrArmor(0, floppy);
+						event.getEntityPlayer().setHeldItem(event.getHand(), floppy);
 					} else if (stack.getItem() != null && stack.getItem() == Content.itemFloppyDisk
 							&& drive.getDisk() == null) {
 						drive.setDisk(stack);
-						event.entityPlayer.setCurrentItemOrArmor(0, null);
+						event.getEntityPlayer().setHeldItem(event.getHand(), null);
 					}
 				}
-				event.useBlock = Result.DENY;
-				event.useItem = Result.DENY;
+				event.setUseBlock(Result.DENY);
+				event.setUseItem(Result.DENY);
 			}
 		}
 		if (te instanceof TileEntityAssembler) {
 			TileEntityAssembler assembler = (TileEntityAssembler) te;
-			Pair<AxisAlignedBB, Integer> result = getLaserBoundingBox(assembler, event.x, event.y, event.z,
-					event.entityPlayer, 1);
+			Pair<AxisAlignedBB, Integer> result = getLaserBoundingBox(assembler, event.getPos().getX(), event.getPos().getY(), event.getPos().getZ(),
+					event.getEntityPlayer(), event.getItemStack(), 1);
 			if (result.getLeft() != null) {
-				if (!event.world.isRemote) {
-					ItemStack holding = event.entityPlayer.getHeldItem();
+				if (!event.getWorld().isRemote) {
+					ItemStack holding = event.getItemStack();
 					ItemStack stack2 = holding;
 					if (holding != null) {
 						stack2 = holding.copy();
@@ -249,7 +254,7 @@ public class CommonProxy {
 					}
 					assembler.laserHelper.createLaser(result.getRight(), stack2);
 					if (holding == null)
-						event.entityPlayer.inventory.setInventorySlotContents(event.entityPlayer.inventory.currentItem,
+						event.getEntityPlayer().inventory.setInventorySlotContents(event.getEntityPlayer().inventory.currentItem,
 								new ItemStack(Content.itemLaser));
 					else if (holding.getItem() == Content.itemLaser) {
 						holding.stackSize--;
@@ -257,41 +262,42 @@ public class CommonProxy {
 							holding = null;
 					}
 				}
-				event.useBlock = Result.DENY;
-				event.useItem = Result.DENY;
+
+				event.setUseBlock(Result.DENY);
+				event.setUseItem(Result.DENY);
 			}
 		}
 	}
 
 	public Pair<AxisAlignedBB, Integer> getLaserBoundingBox(TileEntityAssembler te, int x, int y, int z,
-			EntityPlayer player, float partialTicks) {
+			EntityPlayer player, ItemStack heldStack, float partialTicks) {
 		if (te.getStatus() == te.RUNNING || !player.isSneaking())
 			return new ImmutablePair(null, null);
-		boolean holdsEmpty = player.getHeldItem() == null;
-		boolean holdsLaser = !holdsEmpty ? player.getHeldItem().getItem() == Content.itemLaser : false;
+		boolean holdsEmpty = heldStack == null;
+		boolean holdsLaser = !holdsEmpty ? heldStack.getItem() == Content.itemLaser : false;
 
-		AxisAlignedBB base = AxisAlignedBB.getBoundingBox(0, 0, 0, 1, 8 / 16F, 1).offset(x, y, z);
-		AxisAlignedBB boxBase = AxisAlignedBB.getBoundingBox(11 / 16F, 8 / 16F, 11 / 16F, 15 / 16F, 15 / 16F, 15 / 16F);
+		AxisAlignedBB base = new AxisAlignedBB(0, 0, 0, 1, 8 / 16F, 1).offset(x, y, z);
+		AxisAlignedBB boxBase = new AxisAlignedBB(11 / 16F, 8 / 16F, 11 / 16F, 15 / 16F, 15 / 16F, 15 / 16F);
 		AxisAlignedBB box1 = null, box2 = null, box3 = null, box4 = null;
 
-		Laser l1 = te.laserHelper.getLaser((te.rotation + 0) % 4);
+		Laser l1 = te.laserHelper.getLaser(te.rotation);
 		if (l1 != null && holdsEmpty || holdsLaser && l1 == null)
 			box1 = MiscUtils.getRotatedInstance(boxBase, 2).offset(x, y, z);
-		Laser l2 = te.laserHelper.getLaser((te.rotation + 1) % 4);
+		Laser l2 = te.laserHelper.getLaser(MiscUtils.rot(te.rotation));
 		if (l2 != null && holdsEmpty || holdsLaser && l2 == null)
 			box2 = MiscUtils.getRotatedInstance(boxBase, 1).offset(x, y, z);
-		Laser l3 = te.laserHelper.getLaser((te.rotation + 2) % 4);
+		Laser l3 = te.laserHelper.getLaser(MiscUtils.rotn(te.rotation, 2));
 		if (l3 != null && holdsEmpty || holdsLaser && l3 == null)
 			box3 = MiscUtils.getRotatedInstance(boxBase, 0).offset(x, y, z);
-		Laser l4 = te.laserHelper.getLaser((te.rotation + 3) % 4);
+		Laser l4 = te.laserHelper.getLaser(MiscUtils.rotn(te.rotation, 3));
 		if (l4 != null && holdsEmpty || holdsLaser && l4 == null)
 			box4 = MiscUtils.getRotatedInstance(boxBase, 3).offset(x, y, z);
 
-		MovingObjectPosition mop = RayTracer.rayTraceAABB(player, partialTicks, base, box1, box2, box3, box4);
+		RayTraceResult mop = RayTracer.rayTraceAABB(player, partialTicks, base, box1, box2, box3, box4);
 		if (mop == null || mop.hitInfo == base)
 			return new ImmutablePair(null, null);
 
-		int id = (te.rotation + (mop.hitInfo == box1 ? 0 : mop.hitInfo == box2 ? 1 : mop.hitInfo == box3 ? 2
+		int id = (te.rotation.getIndex() + (mop.hitInfo == box1 ? 0 : mop.hitInfo == box2 ? 1 : mop.hitInfo == box3 ? 2
 				: mop.hitInfo == box4 ? 3 : 0)) % 4;
 		return new ImmutablePair((AxisAlignedBB) mop.hitInfo, id);
 	}

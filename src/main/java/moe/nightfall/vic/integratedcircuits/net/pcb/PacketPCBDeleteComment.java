@@ -9,8 +9,9 @@ import moe.nightfall.vic.integratedcircuits.proxy.CommonProxy;
 import moe.nightfall.vic.integratedcircuits.tile.TileEntityCAD;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.PacketBuffer;
-import cpw.mods.fml.common.network.NetworkRegistry.TargetPoint;
-import cpw.mods.fml.relauncher.Side;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class PacketPCBDeleteComment extends PacketTileEntity<PacketPCBDeleteComment> {
 
@@ -39,11 +40,11 @@ public class PacketPCBDeleteComment extends PacketTileEntity<PacketPCBDeleteComm
 
 	@Override
 	public void process(EntityPlayer player, Side side) {
-		TileEntityCAD te = (TileEntityCAD) player.worldObj.getTileEntity(xCoord, yCoord, zCoord);
+		TileEntityCAD te = (TileEntityCAD) player.worldObj.getTileEntity(new BlockPos(xCoord, yCoord, zCoord));
 
 		if (te != null) {
 			if (side.isServer()) {
-				CommonProxy.networkWrapper.sendToAllAround(this, new TargetPoint(te.getWorldObj().provider.dimensionId,
+				CommonProxy.networkWrapper.sendToAllAround(this, new TargetPoint(te.getWorld().provider.getDimension(),
 						xCoord, yCoord, zCoord, 8));
 			}
 

@@ -1,17 +1,23 @@
 package moe.nightfall.vic.integratedcircuits.client.gui.cad;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import moe.nightfall.vic.integratedcircuits.misc.Vec2i;
+import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.renderer.vertex.VertexFormat;
+import net.minecraft.util.math.MathHelper;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import com.google.common.collect.Lists;
 
-import codechicken.lib.math.MathHelper;
-import cpw.mods.fml.client.config.GuiButtonExt;
+//import codechicken.lib.math.MathHelper;
+import net.minecraftforge.fml.client.config.GuiButtonExt;
 import moe.nightfall.vic.integratedcircuits.Config;
 import moe.nightfall.vic.integratedcircuits.ContainerCAD;
 import moe.nightfall.vic.integratedcircuits.client.Resources;
@@ -28,7 +34,7 @@ import moe.nightfall.vic.integratedcircuits.client.gui.component.GuiLabel;
 import moe.nightfall.vic.integratedcircuits.client.gui.component.GuiPartChooser;
 import moe.nightfall.vic.integratedcircuits.client.gui.component.GuiRollover;
 import moe.nightfall.vic.integratedcircuits.client.gui.component.GuiStateLabel;
-import moe.nightfall.vic.integratedcircuits.compat.NEIAddon;
+//import moe.nightfall.vic.integratedcircuits.compat.NEIAddon;
 import moe.nightfall.vic.integratedcircuits.cp.CircuitData;
 import moe.nightfall.vic.integratedcircuits.cp.CircuitPart;
 import moe.nightfall.vic.integratedcircuits.cp.CircuitPartRenderer;
@@ -40,7 +46,6 @@ import moe.nightfall.vic.integratedcircuits.cp.part.cell.PartNullCell;
 import moe.nightfall.vic.integratedcircuits.cp.part.timed.IConfigurableDelay;
 import moe.nightfall.vic.integratedcircuits.misc.MiscUtils;
 import moe.nightfall.vic.integratedcircuits.misc.RenderUtils;
-import moe.nightfall.vic.integratedcircuits.misc.Vec2;
 import moe.nightfall.vic.integratedcircuits.net.pcb.PacketPCBCache;
 import moe.nightfall.vic.integratedcircuits.net.pcb.PacketPCBChangeName;
 import moe.nightfall.vic.integratedcircuits.net.pcb.PacketPCBChangePart;
@@ -162,7 +167,7 @@ public class GuiCAD extends GuiContainer implements IGuiCallback, IHoverableHand
 	public void initGui() {
 
 		Keyboard.enableRepeatEvents(true);
-		NEIAddon.hideGUI(true);
+		//NEIAddon.hideGUI(true);
 
 		this.mc.thePlayer.openContainer = this.inventorySlots;
 
@@ -316,13 +321,13 @@ public class GuiCAD extends GuiContainer implements IGuiCallback, IHoverableHand
 			else
 				onCallback(callbackDelete, Action.OK, 0);
 		} else if (button.id == 13)
-			CommonProxy.networkWrapper.sendToServer(new PacketPCBSaveLoad(true, tileentity.xCoord, tileentity.yCoord, tileentity.zCoord));
+			CommonProxy.networkWrapper.sendToServer(new PacketPCBSaveLoad(true, tileentity.getPos().getX(), tileentity.getPos().getY(), tileentity.getPos().getZ()));
 		else if (button.id == 12)
-			CommonProxy.networkWrapper.sendToServer(new PacketPCBSaveLoad(false, tileentity.xCoord, tileentity.yCoord, tileentity.zCoord));
+			CommonProxy.networkWrapper.sendToServer(new PacketPCBSaveLoad(false, tileentity.getPos().getX(), tileentity.getPos().getY(), tileentity.getPos().getZ()));
 		else if (button.id == 84)
-			CommonProxy.networkWrapper.sendToServer(new PacketPCBCache(PacketPCBCache.UNDO, tileentity.xCoord, tileentity.yCoord, tileentity.zCoord));
+			CommonProxy.networkWrapper.sendToServer(new PacketPCBCache(PacketPCBCache.UNDO, tileentity.getPos().getX(), tileentity.getPos().getY(), tileentity.getPos().getZ()));
 		else if (button.id == 85)
-			CommonProxy.networkWrapper.sendToServer(new PacketPCBCache(PacketPCBCache.REDO, tileentity.xCoord, tileentity.yCoord, tileentity.zCoord));
+			CommonProxy.networkWrapper.sendToServer(new PacketPCBCache(PacketPCBCache.REDO, tileentity.getPos().getX(), tileentity.getPos().getY(), tileentity.getPos().getZ()));
 
 		else if (button.id == 90) {
 			switch (rollover.getSelected()) {
@@ -370,7 +375,7 @@ public class GuiCAD extends GuiContainer implements IGuiCallback, IHoverableHand
 
 	private void tryPrint() {
 		CommonProxy.networkWrapper
-				.sendToServer(new PacketPCBPrint(tileentity.xCoord, tileentity.yCoord, tileentity.zCoord));
+				.sendToServer(new PacketPCBPrint(tileentity.getPos().getX(), tileentity.getPos().getY(), tileentity.getPos().getZ()));
 	}
 
 	//Functions to convert between screen coordinates and circuit board coordinates
@@ -499,7 +504,7 @@ public class GuiCAD extends GuiContainer implements IGuiCallback, IHoverableHand
 		endX = (int) relX;
 		endY = (int) relY;
 
-		ScaledResolution scaledresolution = new ScaledResolution(this.mc, this.mc.displayWidth, this.mc.displayHeight);
+		ScaledResolution scaledresolution = new ScaledResolution(this.mc);
 		int guiScale = scaledresolution.getScaleFactor();
 		
 		// Draw the "border"
@@ -519,7 +524,7 @@ public class GuiCAD extends GuiContainer implements IGuiCallback, IHoverableHand
 		mc.renderEngine.bindTexture(Resources.RESOURCE_GUI_FLOPPY);
 		GL11.glEnable(GL11.GL_BLEND);
 		GL11.glColor4f(1, 1, 1, 0.2F);
-		func_146110_a(width - 25, 8, 16, 16, 16, 16, 16, 16);
+		drawModalRectWithCustomSizedTexture(width - 25, 8, 16, 16, 16, 16, 16, 16);
 		GL11.glDisable(GL11.GL_BLEND);
 
 		GL11.glColor3f(1, 1, 1);
@@ -537,7 +542,7 @@ public class GuiCAD extends GuiContainer implements IGuiCallback, IHoverableHand
 		int w = data.getSize();
 		if (gridX >= 0 && gridY >= 0 && gridX < w && gridY < w && !blockMouseInput && !isShiftKeyDown()) {
 			if (mouseX >= editorLeft && mouseX < editorRight && mouseY >= editorTop && mouseY < editorBottom) {
-				Vec2 pos = new Vec2(gridX, gridY);
+				Vec2i pos = new Vec2i(gridX, gridY);
 				CircuitPart part = data.getPart(pos);
 				if (!(part instanceof PartNull || part instanceof PartWire || part instanceof PartNullCell)) {
 					ArrayList<String> text = Lists.newArrayList();
@@ -563,44 +568,39 @@ public class GuiCAD extends GuiContainer implements IGuiCallback, IHoverableHand
 	}
 
 	private void drawGradients(int gradientLeft, int gradientTop, int gradientRight, int gradientBottom, int gradientSize) {
-		Tessellator tes = Tessellator.instance;
+		Tessellator tes = Tessellator.getInstance();
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
 		GL11.glEnable(GL11.GL_BLEND);
 		GL11.glDisable(GL11.GL_ALPHA_TEST);
 		OpenGlHelper.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
 		GL11.glShadeModel(GL11.GL_SMOOTH);
-		tes.startDrawingQuads();
+		VertexBuffer buffer = tes.getBuffer();
+
+		buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
+
 		// Top gradient
-		tes.setColorRGBA_F(0, 0, 0, 0);
-		tes.addVertex(gradientLeft, gradientTop + gradientSize, 0);
-		tes.addVertex(gradientRight, gradientTop + gradientSize, 0);
-		tes.setColorRGBA_F(0, 0, 0, 0.8F);
-		tes.addVertex(gradientRight, gradientTop, 0);
-		tes.addVertex(gradientLeft, gradientTop, 0);
+		buffer.pos(gradientLeft, gradientTop + gradientSize, 0).color(0, 0, 0, 0).endVertex();
+		buffer.pos(gradientRight, gradientTop + gradientSize, 0).color(0, 0, 0, 0).endVertex();
+		buffer.pos(gradientRight, gradientTop, 0).color(0.0f, 0.0f, 0.0f, 0.8f).endVertex();
+		buffer.pos(gradientLeft, gradientTop, 0).color(0.0f, 0.0f, 0.0f, 0.8f).endVertex();
 
 		// Bottom gradient
-		tes.setColorRGBA_F(0, 0, 0, 0.8F);
-		tes.addVertex(gradientLeft, gradientBottom, 0);
-		tes.addVertex(gradientRight, gradientBottom, 0);
-		tes.setColorRGBA_F(0, 0, 0, 0);
-		tes.addVertex(gradientRight, gradientBottom - gradientSize, 0);
-		tes.addVertex(gradientLeft, gradientBottom - gradientSize, 0);
+		buffer.pos(gradientLeft, gradientBottom, 0).color(0.0f, 0.0f, 0.0f, 0.8f).endVertex();
+		buffer.pos(gradientRight, gradientBottom, 0).color(0.0f, 0.0f, 0.0f, 0.8f).endVertex();
+		buffer.pos(gradientRight, gradientBottom - gradientSize, 0).color(0.0f, 0.0f, 0.0f, 0.0f).endVertex();
+		buffer.pos(gradientLeft, gradientBottom - gradientSize, 0).color(0.0f, 0.0f, 0.0f, 0.0f).endVertex();
 
 		// Left gradient
-		tes.setColorRGBA_F(0, 0, 0, 0.8F);
-		tes.addVertex(gradientLeft, gradientTop, 0);
-		tes.addVertex(gradientLeft, gradientBottom, 0);
-		tes.setColorRGBA_F(0, 0, 0, 0);
-		tes.addVertex(gradientLeft + gradientSize, gradientBottom, 0);
-		tes.addVertex(gradientLeft + gradientSize, gradientTop, 0);
+		buffer.pos(gradientLeft, gradientTop, 0).color(0.0f, 0.0f, 0.0f, 0.8f).endVertex();
+		buffer.pos(gradientLeft, gradientBottom, 0).color(0.0f, 0.0f, 0.0f, 0.8f).endVertex();
+		buffer.pos(gradientLeft + gradientSize, gradientBottom, 0).color(0.0f, 0.0f, 0.0f, 0.0f).endVertex();
+		buffer.pos(gradientLeft + gradientSize, gradientTop, 0).color(0.0f, 0.0f, 0.0f, 0.0f).endVertex();
 
 		// Right gradient
-		tes.setColorRGBA_F(0, 0, 0, 0);
-		tes.addVertex(gradientRight - gradientSize, gradientTop, 0);
-		tes.addVertex(gradientRight - gradientSize, gradientBottom, 0);
-		tes.setColorRGBA_F(0, 0, 0, 0.8F);
-		tes.addVertex(gradientRight, gradientBottom, 0);
-		tes.addVertex(gradientRight, gradientTop, 0);
+		buffer.pos(gradientRight - gradientSize, gradientTop, 0).color(0.0f, 0.0f, 0.0f, 0.0f).endVertex();
+		buffer.pos(gradientRight - gradientSize, gradientBottom, 0).color(0.0f, 0.0f, 0.0f, 0.0f).endVertex();
+		buffer.pos(gradientRight, gradientBottom, 0).color(0.0f, 0.0f, 0.0f, 0.8f).endVertex();
+		buffer.pos(gradientRight, gradientTop, 0).color(0.0f, 0.0f, 0.0f, 0.8f).endVertex();
 
 		tes.draw();
 		
@@ -643,12 +643,18 @@ public class GuiCAD extends GuiContainer implements IGuiCallback, IHoverableHand
 	}
 	
 	private void renderTunnelConnections(CircuitData data, boolean ctrl) {
-		Tessellator tes = Tessellator.instance;
+		/*
+		Tessellator tes = Tessellator.getInstance();
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
-		tes.startDrawingQuads();
+
+		VertexBuffer buffer = tes.getBuffer();
+
+		buffer.te
+
+		buffer.begin(GL11.GL_QUADS, )
 		for (int x = 0; x < data.getSize(); x++)
 			for (int y = 0; y < data.getSize(); y++) {
-				if (ctrl || x == endX && y == endY && data.getPart(new Vec2(x, y)) instanceof PartTunnel && currentHandler == editHandler)
+				if (ctrl || x == endX && y == endY && data.getPart(new Vec2i(x, y)) instanceof PartTunnel && currentHandler == editHandler)
 					drawTunnelConnection(x, y);
 				if (drag && currentHandler == editHandler) {
 					tes.setColorRGBA_F(0, 0, 1, 1);
@@ -657,16 +663,17 @@ public class GuiCAD extends GuiContainer implements IGuiCallback, IHoverableHand
 			}
 		tes.draw();
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
+		*/
 	}
 
 	private void drawTunnelConnection(int firstX, int firstY) {
-		Vec2 pos = new Vec2(firstX, firstY);
+		Vec2i pos = new Vec2i(firstX, firstY);
 		CircuitPart part = getCircuitData().getPart(pos);
 		if (!(part instanceof PartTunnel))
 			return;
 
 		PartTunnel pt = (PartTunnel) part;
-		Vec2 pos2 = pt.getConnectedPos(pos, tileentity);
+		Vec2i pos2 = pt.getConnectedPos(pos, tileentity);
 
 		if (pt.getInput(pos, tileentity) || pt.getProperty(pos, tileentity, pt.PROP_IN)) {
 			Tessellator.instance.setColorRGBA_F(1F, 0F, 0F, 1F);
@@ -705,19 +712,33 @@ public class GuiCAD extends GuiContainer implements IGuiCallback, IHoverableHand
 					scale(tileentity.offX, tileentity.offY, wheelD);
 			}
 		}
-		super.handleMouseInput();
+
+		try {
+			super.handleMouseInput();
+		} catch (IOException ex) {
+			// TODO do something
+		}
 	}
 	
 	@Override
 	protected void mouseClicked(int mouseX, int mouseY, int flag) {
 		nameField.mouseClicked(mouseX, mouseY, flag);
 		if (blockMouseInput) {
-			super.mouseClicked(mouseX, mouseY, flag);
+			try {
+				super.mouseClicked(mouseX, mouseY, flag);
+
+			} catch(IOException ex) {
+				// TODO do something
+			}
 			return;
 		}
 
 		if (mouseX < editorLeft || mouseY < editorTop || mouseX > editorRight || mouseY > editorBottom) {
-			super.mouseClicked(mouseX, mouseY, flag);
+			try {
+				super.mouseClicked(mouseX, mouseY, flag);
+			} catch (IOException ex) {
+				// TODO do something
+			}
 			return;
 		}
 
@@ -727,7 +748,11 @@ public class GuiCAD extends GuiContainer implements IGuiCallback, IHoverableHand
 		lastX = mouseX;
 		lastY = mouseY;
 
-		super.mouseClicked(mouseX, mouseY, flag);
+		try {
+			super.mouseClicked(mouseX, mouseY, flag);
+		} catch(IOException ex) {
+			// TODO do something
+		}
 	}
 
 	@Override
@@ -749,6 +774,8 @@ public class GuiCAD extends GuiContainer implements IGuiCallback, IHoverableHand
 		lastX = mouseX;
 		lastY = mouseY;
 	}
+
+
 
 	@Override
 	protected void mouseMovedOrUp(int mx, int my, int button) {
@@ -796,8 +823,8 @@ public class GuiCAD extends GuiContainer implements IGuiCallback, IHoverableHand
 		double limitX = (xSizeEditor + innerSize)/2.0;
 		double limitY = (ySizeEditor + innerSize)/2.0;
 		
-		tileentity.offX = MathHelper.clip(tileentity.offX, -limitX, limitX);
-		tileentity.offY = MathHelper.clip(tileentity.offY, -limitY, limitY);
+		tileentity.offX = MathHelper.clamp_double(tileentity.offX, -limitX, limitX);
+		tileentity.offY = MathHelper.clamp_double(tileentity.offY, -limitY, limitY);
 	}
 
 	@Override
@@ -805,10 +832,10 @@ public class GuiCAD extends GuiContainer implements IGuiCallback, IHoverableHand
 		int w = getBoardSize();
 		if (result == Action.OK && gui == callbackDelete) {
 			if (callback == 1)
-				CommonProxy.networkWrapper.sendToServer(new PacketPCBClear((byte) w, tileentity.xCoord, tileentity.yCoord, tileentity.zCoord));
+				CommonProxy.networkWrapper.sendToServer(new PacketPCBClear((byte) w, tileentity.getPos().getX(), tileentity.getPos().getY(), tileentity.getPos().getZ()));
 			else {
 				w = w == 16 ? 32 : w == 32 ? 64 : 16;
-				CommonProxy.networkWrapper.sendToServer(new PacketPCBClear((byte) w, tileentity.xCoord, tileentity.yCoord, tileentity.zCoord));
+				CommonProxy.networkWrapper.sendToServer(new PacketPCBClear((byte) w, tileentity.getPos().getX(), tileentity.getPos().getY(), tileentity.getPos().getZ()));
 			}
 		} else if (gui == callbackTimed && result == Action.CUSTOM) {
 			IConfigurableDelay conf = (IConfigurableDelay) timedPart.getPart();
@@ -831,7 +858,7 @@ public class GuiCAD extends GuiContainer implements IGuiCallback, IHoverableHand
 			conf.setConfigurableDelay(timedPart.getPos(), timedPart, delay);
 			labelTimed.setText(I18n.format("gui.integratedcitcuits.cad.callback.delay",
 					conf.getConfigurableDelay(timedPart.getPos(), timedPart)));
-			CommonProxy.networkWrapper.sendToServer(new PacketPCBChangePart(false, tileentity.xCoord, tileentity.yCoord, tileentity.zCoord)
+			CommonProxy.networkWrapper.sendToServer(new PacketPCBChangePart(false, tileentity.getPos().getX(), tileentity.getPos().getY(), tileentity.getPos().getZ())
 				.add(timedPart.getPos(), CircuitPart.getId(timedPart.getPart()), timedPart.getState()));
 		}
 	}
@@ -842,20 +869,22 @@ public class GuiCAD extends GuiContainer implements IGuiCallback, IHoverableHand
 		if (nameField.isFocused())
 			nameField.textboxKeyTyped(par1, par2);
 		else if (par2 == Keyboard.KEY_Z && isCtrlKeyDown())
-			CommonProxy.networkWrapper.sendToServer(new PacketPCBCache(PacketPCBCache.UNDO, tileentity.xCoord, tileentity.yCoord,
-					tileentity.zCoord));
+			CommonProxy.networkWrapper.sendToServer(new PacketPCBCache(PacketPCBCache.UNDO, tileentity.getPos().getX(), tileentity.getPos().getY(), tileentity.getPos().getZ()));
 		else if (par2 == Keyboard.KEY_Y && isCtrlKeyDown())
-			CommonProxy.networkWrapper.sendToServer(new PacketPCBCache(PacketPCBCache.REDO, tileentity.xCoord, tileentity.yCoord,
-					tileentity.zCoord));
+			CommonProxy.networkWrapper.sendToServer(new PacketPCBCache(PacketPCBCache.REDO, tileentity.getPos().getX(), tileentity.getPos().getY(), tileentity.getPos().getZ()));
 		else {
 			if (!currentHandler.onKeyTyped(this, par2, par1)) {
-				super.keyTyped(par1, par2);
+				try {
+					super.keyTyped(par1, par2);
+				} catch(IOException ex) {
+					//TODO do something
+				}
 			}
 		}
 
 		if (!oname.equals(nameField.getText()))
 			CommonProxy.networkWrapper.sendToServer(new PacketPCBChangeName(MiscUtils.thePlayer(), nameField.getText(),
-					tileentity.xCoord, tileentity.yCoord, tileentity.zCoord));
+					tileentity.getPos().getX(), tileentity.getPos().getY(), tileentity.getPos().getZ()));
 	}
 
 	public List getButtonList() {
@@ -876,7 +905,7 @@ public class GuiCAD extends GuiContainer implements IGuiCallback, IHoverableHand
 		Config.showConfirmMessage.set(checkboxDelete.isChecked());
 		Config.save();
 
-		NEIAddon.hideGUI(false);
+		//NEIAddon.hideGUI(false);
 	}
 
 	@Override

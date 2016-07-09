@@ -9,18 +9,18 @@ import moe.nightfall.vic.integratedcircuits.api.gate.ISocketWrapper;
 import moe.nightfall.vic.integratedcircuits.misc.RayTracer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import buildcraft.api.transport.IPipeTile;
 import buildcraft.api.transport.PipeManager;
 import buildcraft.api.transport.pluggable.PipePluggable;
 import codechicken.lib.vec.BlockCoord;
-import cpw.mods.fml.common.eventhandler.Event.Result;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.eventhandler.Event.Result;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class BCAddon {
 	public static void preInit() {
@@ -33,7 +33,7 @@ public class BCAddon {
 				IPipeTile tile = getPipe(world, pos.x, pos.y, pos.z);
 				if (tile == null)
 					return null;
-				PipePluggable pluggable = tile.getPipePluggable(ForgeDirection.getOrientation(side));
+				PipePluggable pluggable = tile.getPipePluggable(EnumFacing.getOrientation(side));
 				return pluggable instanceof ISocketWrapper ? ((ISocketWrapper) pluggable).getSocket() : null;
 			}
 		});
@@ -50,7 +50,7 @@ public class BCAddon {
 			TileEntity te = event.world.getTileEntity(event.x, event.y, event.z);
 			if (te instanceof IPipeTile) {
 				IPipeTile ptile = (IPipeTile) te;
-				PipePluggable ppl = ptile.getPipePluggable(ForgeDirection.getOrientation(event.face));
+				PipePluggable ppl = ptile.getPipePluggable(EnumFacing.getOrientation(event.face));
 				if (ppl instanceof ISocketWrapper) {
 					MovingObjectPosition target = RayTracer.rayTrace(event.entityPlayer, 1F);
 					ItemStack stack = event.entityPlayer.getCurrentEquippedItem();

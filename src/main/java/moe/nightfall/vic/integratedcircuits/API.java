@@ -9,11 +9,11 @@ import moe.nightfall.vic.integratedcircuits.api.gate.ISocket;
 import moe.nightfall.vic.integratedcircuits.api.gate.ISocketProvider;
 import moe.nightfall.vic.integratedcircuits.gate.GateRegistry;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import codechicken.lib.data.MCDataOutput;
-import codechicken.lib.vec.BlockCoord;
-import codechicken.lib.vec.Rotation;
 
 import com.google.common.collect.Lists;
 
@@ -22,7 +22,7 @@ public class API implements IAPI {
 	private GateRegistry gateRegistry = new GateRegistry();
 
 	@Override
-	public ISocket getSocketAt(World world, BlockCoord pos, int side) {
+	public ISocket getSocketAt(World world, BlockPos pos, EnumFacing side) {
 		ISocket socket;
 		for (ISocketProvider provider : providerList) {
 			socket = provider.getSocketAt(world, pos, side);
@@ -43,21 +43,22 @@ public class API implements IAPI {
 	}
 
 	@Override
-	public MCDataOutput getWriteStream(World world, BlockCoord pos, int side) {
+	public MCDataOutput getWriteStream(World world, BlockPos pos, int side) {
 		return IntegratedCircuits.proxy.addStream(world, pos, side);
 	}
 
 	@Override
-	public int updateRedstoneInput(ISocket socket, int side) {
-		int rotation = socket.getRotationAbs(side);
-		int face = socket.getSide();
-		int abs = Rotation.rotateSide(face, rotation);
-		BlockCoord pos = socket.getPos().offset(abs);
+	public int updateRedstoneInput(ISocket socket, EnumFacing side) {
+		EnumFacing rotation = socket.getRotationAbs(side);
+		EnumFacing face = socket.getSide();
+		EnumFacing abs = face.rotateAround(rotation.getAxis());
+		BlockPos pos = socket.getPos().offset(abs);
 
 		int input = 0;
 
 		// Vanilla input
-		input = socket.getWorld().getIndirectPowerLevelTo(pos.x, pos.y, pos.z, abs);
+		input = socket.getWorld().getRedstonePower(pos, abs);
+		//input = socket.getWorld().getIndirectPowerLevelTo(pos.x, pos.y, pos.z, abs);
 
 		//Comparator input
 		if(socket.getConnectionTypeAtSide(side).isRedstone() && hasComparatorInput(socket, pos))
@@ -66,8 +67,8 @@ public class API implements IAPI {
 			return input;
 
 		// Compatibility to Redstone
-		if (input < 15 && socket.getWorld().getBlock(pos.x, pos.y, pos.z) == Blocks.redstone_wire)
-			input = Math.max(input, socket.getWorld().getBlockMetadata(pos.x, pos.y, pos.z));
+		if (input < 15 && socket.getWorld().getBlockState(pos).getBlock() == Blocks.REDSTONE_WIRE)
+			input = Math.max(input, socket.getWorld().getBlockState(pos));
 		if (input != 0)
 			return input;
 
@@ -81,26 +82,26 @@ public class API implements IAPI {
 		return input;
 	}
 
-	public boolean hasComparatorInput(ISocket socket, BlockCoord pos)
+	public boolean hasComparatorInput(ISocket socket, BlockPos pos)
 	{
-		Block b = socket.getWorld().getBlock(pos.x, pos.y, pos.z);
+		IBlockState b = socket.getWorld().getBlockState(pos);
 		return b.hasComparatorInputOverride();
 	}
 
-	public int updateComparatorInput(ISocket socket, BlockCoord pos, int rotation)
+	public int updateComparatorInput(ISocket socket, BlockPos pos)
 	{
-		Block b = socket.getWorld().getBlock(pos.x, pos.y, pos.z);
+		IBlockState b = socket.getWorld().getBlockState(pos);
 		if(b != null && b.hasComparatorInputOverride())
-			return b.getComparatorInputOverride(socket.getWorld(), pos.x, pos.y, pos.z, rotation ^ 1);
+			return b.getComparatorInputOverride(socket.getWorld(), pos);
 		return 0;
 	}
 
 	@Override
-	public byte[] updateBundledInput(ISocket socket, int side) {
-		int rotation = socket.getRotationAbs(side);
-		int face = socket.getSide();
-		int abs = Rotation.rotateSide(face, rotation);
-		BlockCoord pos = socket.getPos().offset(abs);
+	public byte[] updateBundledInput(ISocket socket, EnumFacing side) {
+		EnumFacing rotation = socket.getRotationAbs(side);
+		EnumFacing face = socket.getSide();
+		EnumFacing abs = face.rotateAround(rotation.getAxis());
+		BlockPos pos = socket.getPos().offset(abs);
 
 		byte[] input = updateBundledInputNative(socket, rotation, side, pos);
 		if (input != null)
@@ -116,10 +117,10 @@ public class API implements IAPI {
 		return input == null ? new byte[16] : input;
 	}
 
-	public byte[] updateBundledInputNative(ISocket socket, int rotation, int side, BlockCoord pos) {
+	public byte[] updateBundledInputNative(ISocket socket, EnumFacing rotation, EnumFacing side, BlockPos pos) {
 		ISocket neighbour = getSocketAt(socket.getWorld(), pos, socket.getSide());
 		if (neighbour != null)
-			return neighbour.getOutput()[(side + 2) % 4];
+			return neighbour.getOutput()[side.getOpposite().getHorizontalIndex()];
 		return null;
 	}
 }

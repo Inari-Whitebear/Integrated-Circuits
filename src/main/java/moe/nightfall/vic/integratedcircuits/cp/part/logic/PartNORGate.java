@@ -1,10 +1,10 @@
 package moe.nightfall.vic.integratedcircuits.cp.part.logic;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import moe.nightfall.vic.integratedcircuits.misc.Vec2i;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import moe.nightfall.vic.integratedcircuits.cp.CircuitPartRenderer;
 import moe.nightfall.vic.integratedcircuits.cp.ICircuit;
-import moe.nightfall.vic.integratedcircuits.misc.Vec2;
 
 public class PartNORGate extends PartORGate {
 	@Override
@@ -14,12 +14,12 @@ public class PartNORGate extends PartORGate {
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public Vec2 getTextureOffset(Vec2 pos, ICircuit parent, double x, double y, CircuitPartRenderer.EnumRenderType type) {
-		return new Vec2(11, 0);
+	public Vec2i getTextureOffset(Vec2i pos, ICircuit parent, double x, double y, CircuitPartRenderer.EnumRenderType type) {
+		return new Vec2i(11, 0);
 	}
 
 	@Override
-	public void calcOutput(Vec2 pos, ICircuit parent) {
+	public void calcOutput(Vec2i pos, ICircuit parent) {
 		super.calcOutput(pos, parent);
 		setOutput(pos, parent, !getOutput(pos, parent));
 	}

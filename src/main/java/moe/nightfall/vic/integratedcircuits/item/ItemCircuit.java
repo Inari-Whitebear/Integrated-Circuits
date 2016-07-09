@@ -2,8 +2,8 @@ package moe.nightfall.vic.integratedcircuits.item;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.StatCollector;
-import codechicken.lib.vec.BlockCoord;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.translation.I18n;
 
 public class ItemCircuit extends ItemGate {
 	public ItemCircuit() {
@@ -16,18 +16,18 @@ public class ItemCircuit extends ItemGate {
 	@Override
 	public String getItemStackDisplayName(ItemStack stack) {
 		if (stack.getTagCompound() == null)
-			return StatCollector.translateToLocalFormatted(getUnlocalizedName() + ".name", "INVALID!");
+			return I18n.translateToLocalFormatted(getUnlocalizedName() + ".name", "INVALID!");
 		String name = stack.getTagCompound().getCompoundTag("circuit").getCompoundTag("properties").getString("name");
-		return StatCollector.translateToLocalFormatted(getUnlocalizedName() + ".name", name);
+		return I18n.translateToLocalFormatted(getUnlocalizedName() + ".name", name);
 	}
-
+/*
 	@Override
-	public String getGateID(ItemStack stack, EntityPlayer player, BlockCoord pos) {
+	public String getGateID(ItemStack stack, EntityPlayer player, BlockPos pos) {
 		return "circuit";
 	}
 	
 	@Override
 	public Boolean usedUpOnPlace(EntityPlayer player) {
 		return true;
-	}
+	}*/
 }

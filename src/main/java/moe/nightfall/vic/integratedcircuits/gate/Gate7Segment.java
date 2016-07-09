@@ -20,16 +20,15 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagIntArray;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.common.util.Constants.NBT;
 
 import org.apache.commons.lang3.StringUtils;
 
 import codechicken.lib.data.MCDataInput;
 import codechicken.lib.data.MCDataOutput;
-import codechicken.lib.vec.BlockCoord;
-import codechicken.lib.vec.Cuboid6;
-import codechicken.lib.vec.Rotation;
 
 import com.google.common.collect.Lists;
 
@@ -43,10 +42,10 @@ public class Gate7Segment extends Gate {
 	public boolean hasSlaves;
 	public int mode = MODE_SIMPLE;
 
-	public BlockCoord parent;
+	public BlockPos parent;
 
 	// TODO Relative positions, will break upon moving like this
-	public ArrayList<BlockCoord> slaves = Lists.newArrayList();
+	public ArrayList<BlockPos> slaves = Lists.newArrayList();
 
 	//   0
 	//   --
@@ -80,7 +79,7 @@ public class Gate7Segment extends Gate {
 	}
 
 	@Override
-	public void onActivatedWithScrewdriver(EntityPlayer player, MovingObjectPosition hit, ItemStack item) {
+	public void onActivatedWithScrewdriver(EntityPlayer player, RayTraceResult hit, ItemStack item) {
 		if (player.isSneaking())
 			CommonProxy.networkWrapper.sendTo(new Packet7SegmentOpenGui(provider), (EntityPlayerMP) player);
 		else
@@ -94,9 +93,9 @@ public class Gate7Segment extends Gate {
 			return;
 
 		isSlave = false;
-		int abs = Rotation.rotateSide(provider.getSide(), provider.getRotationAbs(3));
-		BlockCoord pos = provider.getPos();
-		BlockCoord pos2 = pos.copy();
+		EnumFacing abs = provider.getSide().rotateAround(provider.getRotationAbs(EnumFacing.SOUTH).getAxis());
+		BlockPos pos = provider.getPos();
+		BlockPos pos2 = new BlockPos(pos);
 		Gate7Segment seg;
 
 		int off = 0;
@@ -136,20 +135,20 @@ public class Gate7Segment extends Gate {
 
 	public void updateConnections() {
 		if (isSlave) {
-			BlockCoord crd = provider.getPos();
+			BlockPos crd = provider.getPos();
 			isSlave = false;
 
 			Gate7Segment master = getSegment(parent);
 			if (master != null)
 				master.claimSlaves();
-			int abs = Rotation.rotateSide(provider.getSide(), provider.getRotationAbs(1));
+			EnumFacing abs = provider.getSide().rotateAround(provider.getRotationAbs(EnumFacing.UP).getAxis());
 			crd.offset(abs);
 			Gate7Segment seg = getSegment(crd);
 			if (seg != null)
 				seg.claimSlaves();
 		} else {
-			int abs = Rotation.rotateSide(provider.getSide(), provider.getRotationAbs(1));
-			BlockCoord crd = provider.getPos().offset(abs);
+			EnumFacing abs = provider.getSide().rotateAround(provider.getRotationAbs(EnumFacing.UP).getAxis());
+			BlockPos crd = provider.getPos().offset(abs);
 			if (slaves.contains(crd)) {
 				Gate7Segment seg = getSegment(crd);
 				if (seg != null)
@@ -163,9 +162,9 @@ public class Gate7Segment extends Gate {
 		isSlave = false;
 		slaves.clear();
 
-		int abs = Rotation.rotateSide(provider.getSide(), provider.getRotationAbs(1));
-		BlockCoord pos = provider.getPos();
-		BlockCoord pos2 = pos.copy();
+		EnumFacing abs = provider.getSide().rotateAround(provider.getRotationAbs(EnumFacing.UP).getAxis());
+		BlockPos pos = provider.getPos();
+		BlockPos pos2 = new BlockPos(pos);
 		Gate7Segment seg;
 
 		int off = 0;
@@ -176,7 +175,7 @@ public class Gate7Segment extends Gate {
 			if (seg == null)
 				break;
 			if (seg.isSlave && seg.provider.getRotation() == provider.getRotation())
-				slaves.add(pos2.copy());
+				slaves.add(new BlockPos(pos2));
 			else
 				break;
 		} while (off < Config.sevenSegmentMaxDigits);
@@ -185,7 +184,7 @@ public class Gate7Segment extends Gate {
 		sendChangesToClient();
 	}
 
-	public Gate7Segment getSegment(BlockCoord crd) {
+	public Gate7Segment getSegment(BlockPos crd) {
 		ISocket socket = IntegratedCircuitsAPI.getSocketAt(provider.getWorld(), crd, provider.getSide());
 		if (socket == null)
 			return null;
@@ -289,7 +288,7 @@ public class Gate7Segment extends Gate {
 				int decimal = i < dispString.length() ? Integer.valueOf(String.valueOf(dispString.charAt(i))) : 0;
 				Gate7Segment slave = this;
 				if (i > 0) {
-					BlockCoord bc = slaves.get(i - 1);
+					BlockPos bc = slaves.get(i - 1);
 					slave = getSegment(bc);
 				}
 				if (slave != null) {
@@ -307,7 +306,7 @@ public class Gate7Segment extends Gate {
 			Gate7Segment slave = this;
 			int digit = digits != null && i < digits.length ? digits[i] : 0;
 			if (i > 0) {
-				BlockCoord bc = slaves.get(i - 1);
+				BlockPos bc = slaves.get(i - 1);
 				slave = getSegment(bc);
 			}
 			if (slave != null)
@@ -348,13 +347,17 @@ public class Gate7Segment extends Gate {
 		isSlave = tag.getBoolean("isSlave");
 		color = tag.getInteger("color");
 		mode = tag.getInteger("mode");
-		if (isSlave)
-			parent = new BlockCoord(tag.getIntArray("parent"));
+		if (isSlave) {
+			int[] pos = tag.getIntArray("parent");
+			parent = new BlockPos(pos[0], pos[1], pos[2]);
+		}
 		else {
 			this.slaves = Lists.newArrayList();
 			NBTTagList slaves = tag.getTagList("slaves", NBT.TAG_INT_ARRAY);
-			for (int i = 0; i < slaves.tagCount(); i++)
-				this.slaves.add(new BlockCoord(slaves.func_150306_c(i)));
+			for (int i = 0; i < slaves.tagCount(); i++) {
+				int[] pos = slaves.getIntArrayAt(i);
+				this.slaves.add(new BlockPos(pos[0], pos[1], pos[2]));
+			}
 		}
 	}
 
@@ -366,11 +369,11 @@ public class Gate7Segment extends Gate {
 		tag.setInteger("color", color);
 		tag.setInteger("mode", mode);
 		if (isSlave)
-			tag.setIntArray("parent", parent.intArray());
+			tag.setIntArray("parent", new int[] {parent.getX(), parent.getY(), parent.getZ()});
 		else {
 			NBTTagList slaves = new NBTTagList();
-			for (BlockCoord slave : this.slaves)
-				slaves.appendTag(new NBTTagIntArray(slave.intArray()));
+			for (BlockPos slave : this.slaves)
+				slaves.appendTag(new NBTTagIntArray(new int[] {slave.getX(), slave.getY(), slave.getZ()}));
 			tag.setTag("slaves", slaves);
 		}
 	}

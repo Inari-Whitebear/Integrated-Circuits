@@ -3,11 +3,11 @@ package moe.nightfall.vic.integratedcircuits;
 import java.io.File;
 import java.util.Set;
 
-import cpw.mods.fml.client.event.ConfigChangedEvent;
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import net.minecraft.util.text.translation.I18n;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import moe.nightfall.vic.integratedcircuits.misc.MiscUtils;
-import net.minecraft.util.StatCollector;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
@@ -83,7 +83,7 @@ public class Config {
 	public static class ChangeHandler {
 		@SubscribeEvent
 		public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
-			if (event.modID.equals(Constants.MOD_ID)) {
+			if (event.getModID().equals(Constants.MOD_ID)) {
 				loadValues();
 				loadComments();
 				config.save();
@@ -102,12 +102,12 @@ public class Config {
 	}
 
 	private static void addLanguageKeyOrRedirect(Property p, String languageKey) {
-		String name = StatCollector.translateToLocal(languageKey);
+		String name = I18n.translateToLocal(languageKey);
 		if (name != null && !name.equals(languageKey))
 			p.setLanguageKey(languageKey);
 		else {
 			String redirectKey = languageKey.replace(p.getName(), "redirect");
-			String redirectValue = StatCollector.translateToLocal(redirectKey);
+			String redirectValue = I18n.translateToLocal(redirectKey);
 			if (redirectValue != null && !redirectValue.equals(redirectKey)) {
 				redirectValue = redirectValue.replace("%s", p.getName().toLowerCase());
 				addLanguageKeyOrRedirect(p, redirectValue);
@@ -130,12 +130,12 @@ public class Config {
 					langKey = "config.integratedcircuits." + category + "." + p.getName().toLowerCase();
 				String comment = MiscUtils.translateFormatted(langKey + ".tooltip");
 				if (comment != null && !comment.isEmpty())
-					p.comment = comment.replace("\\n", "\n").replaceAll("\r", "") + " [default: " + p.getDefault()
-							+ "]";
+					p.setComment(comment.replace("\\n", "\n").replaceAll("\r", "") + " [default: " + p.getDefault()
+							+ "]");
 				else {
-					p.comment = "[default: " + p.getDefault() + "]";
+					p.setComment("[default: " + p.getDefault() + "]");
 					if (IntegratedCircuits.developmentEnvironment)
-						p.comment += " \n[debug] missing description in " + langKey + ".tooltip ";
+						p.setComment(p.getComment() + " \n[debug] missing description in " + langKey + ".tooltip ");
 				}
 			}
 		}

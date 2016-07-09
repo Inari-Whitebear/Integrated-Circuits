@@ -2,30 +2,31 @@ package moe.nightfall.vic.integratedcircuits.tile;
 
 import java.util.HashMap;
 
-import codechicken.multipart.MultiPartRegistry;
-import codechicken.multipart.MultiPartRegistry.IPartFactory;
-import codechicken.multipart.TMultiPart;
-
 import com.google.common.collect.Maps;
+import mcmultipart.multipart.IPartFactory;
+import mcmultipart.multipart.IMultipart;
+import mcmultipart.multipart.Multipart;
+import mcmultipart.multipart.MultipartRegistry;
+import net.minecraft.util.ResourceLocation;
 
 public class PartFactory implements IPartFactory {
-	private static HashMap<String, Class<? extends TMultiPart>> parts = Maps.newHashMap();
+	private static HashMap<String, Class<? extends Multipart>> parts = Maps.newHashMap();
 	public static PartFactory instance = new PartFactory();
 
 	private PartFactory() {
 	}
 
-	public static void register(String type, Class<? extends TMultiPart> clazz) {
+	public static void register(String type, Class<? extends Multipart> clazz) {
 		parts.put(type, clazz);
 	}
 
 	@Override
-	public TMultiPart createPart(String arg0, boolean arg1) {
-		Class clazz = parts.get(arg0);
+	public Multipart createPart(ResourceLocation type, boolean client) {
+		Class clazz = parts.get(client);
 		if (clazz == null)
 			return null;
 		try {
-			return (TMultiPart) clazz.newInstance();
+			return (Multipart) clazz.newInstance();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -33,6 +34,6 @@ public class PartFactory implements IPartFactory {
 
 	public static void initialize() {
 		String[] keys = parts.keySet().toArray(new String[parts.keySet().size()]);
-		MultiPartRegistry.registerParts(instance, keys);
+		MultipartRegistry.registerPartFactory(instance, keys);
 	}
 }

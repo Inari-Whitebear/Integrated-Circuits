@@ -4,7 +4,7 @@ import moe.nightfall.vic.integratedcircuits.cp.CircuitPart;
 import moe.nightfall.vic.integratedcircuits.misc.CraftingAmount;
 import moe.nightfall.vic.integratedcircuits.misc.ItemAmount;
 import moe.nightfall.vic.integratedcircuits.misc.MiscUtils;
-import moe.nightfall.vic.integratedcircuits.misc.Vec2;
+import moe.nightfall.vic.integratedcircuits.misc.Vec2i;
 import moe.nightfall.vic.integratedcircuits.net.PacketAssemblerChangeLaser;
 import moe.nightfall.vic.integratedcircuits.net.PacketAssemblerUpdate;
 import moe.nightfall.vic.integratedcircuits.net.PacketAssemblerUpdateInsufficient;
@@ -14,12 +14,12 @@ import moe.nightfall.vic.integratedcircuits.tile.TileEntityAssembler;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.common.util.Constants.NBT;
-import net.minecraftforge.common.util.ForgeDirection;
-import cpw.mods.fml.common.network.NetworkRegistry.TargetPoint;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.util.EnumFacing;
+import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class LaserHelper {
 	private Laser[] lasers = new Laser[4];
@@ -37,8 +37,8 @@ public class LaserHelper {
 		return position;
 	}
 
-	public Laser getLaser(int id) {
-		return lasers[id];
+	public Laser getLaser(EnumFacing side) {
+		return lasers[side.getHorizontalIndex()];
 	}
 
 	public int getLaserAmount() {
@@ -66,17 +66,17 @@ public class LaserHelper {
 		else
 			lasers[id] = new Laser(te, id);
 		te.contents[offset + id] = laser;
-		if (MiscUtils.isServer() && te.getWorldObj() != null)
-			CommonProxy.networkWrapper.sendToDimension(new PacketAssemblerChangeLaser(te.xCoord, te.yCoord, te.zCoord,
-					id, laser), te.getWorldObj().provider.dimensionId);
+		if (MiscUtils.isServer() && te.hasWorldObj())
+			CommonProxy.networkWrapper.sendToDimension(new PacketAssemblerChangeLaser(te.getPos().getX(), te.getPos().getY(), te.getPos().getZ(),
+					id, laser), te.getWorld().provider.getDimension());
 	}
 
 	public NBTTagCompound writeToNBT(NBTTagCompound tag) {
 		NBTTagList lasers = new NBTTagList();
-		for (int i = 0; i < 4; i++) {
+		for (int i = 2; i < 6; i++) {
 			NBTTagCompound comp = new NBTTagCompound();
-			if (getLaser(i) != null)
-				getLaser(i).writeToNBT(comp);
+			if (getLaser(EnumFacing.getFront(i)) != null)
+				getLaser(EnumFacing.getFront(i)).writeToNBT(comp);
 			lasers.appendTag(comp);
 		}
 		tag.setTag("lasers", lasers);
@@ -92,7 +92,7 @@ public class LaserHelper {
 				continue;
 			ItemStack stack = te.contents[i + offset];
 			createLaser(i, stack);
-			getLaser(i).readFromNBT(comp);
+			getLaser(EnumFacing.getFront(2+i)).readFromNBT(comp);
 		}
 		isRunning = tag.getBoolean("isRunning");
 	}
@@ -125,8 +125,8 @@ public class LaserHelper {
 	public void update() {
 		if (isRunning) {
 			boolean b = false;
-			for (int i = 0; i < 4; i++) {
-				Laser laser = getLaser(i);
+			for (int i = 2; i < 6; i++) {
+				Laser laser = getLaser(EnumFacing.getFront(i));
 				if (laser == null)
 					continue;
 				laser.update(0);
@@ -150,7 +150,7 @@ public class LaserHelper {
 		private TileEntityAssembler te;
 		public boolean isActive = true, isRunning = false;
 		private int lastModified;
-		private ForgeDirection direction;
+		private EnumFacing direction;
 		private int step, max, turn;
 
 		private Laser(TileEntityAssembler te, int id) {
@@ -172,7 +172,7 @@ public class LaserHelper {
 			step = tag.getInteger("step");
 			max = tag.getInteger("max");
 			turn = tag.getInteger("turn");
-			direction = ForgeDirection.getOrientation(tag.getInteger("direction"));
+			direction = EnumFacing.values()[tag.getInteger("direction")];
 		}
 
 		public NBTTagCompound writeToNBT(NBTTagCompound tag) {
@@ -237,7 +237,7 @@ public class LaserHelper {
 				if (!te.excMatrix[x][y]) {
 					// Check if the items needed to craft the selected part are
 					// supplied
-					Vec2 pos = new Vec2(x, y);
+					Vec2i pos = new Vec2i(x, y);
 					CircuitPart part = te.cdata.getPart(pos);
 					CraftingAmount amount = new CraftingAmount();
 					part.getCraftingCost(amount, te.cdata, pos);
@@ -246,10 +246,10 @@ public class LaserHelper {
 						te.updateStatus(te.OUT_OF_MATERIALS);
 						ItemAmount insufficient2 = te.craftingSupply.getInsufficient();
 						if (insufficient == null || !insufficient.hasEqualItem(insufficient2))
-							CommonProxy.networkWrapper.sendToAllAround(new PacketAssemblerUpdateInsufficient(te.xCoord,
-									te.yCoord, te.zCoord, te.craftingSupply.getInsufficient()),
-									new TargetPoint(te.getWorldObj().provider.dimensionId, te.xCoord, te.yCoord,
-											te.zCoord, 8));
+							CommonProxy.networkWrapper.sendToAllAround(new PacketAssemblerUpdateInsufficient(te.getPos().getX(),
+									te.getPos().getY(), te.getPos().getZ(), te.craftingSupply.getInsufficient()),
+									new TargetPoint(te.getWorld().provider.getDimension(), te.getPos().getX(),
+											te.getPos().getY(), te.getPos().getZ(), 8));
 						return;
 					} else
 						te.updateStatus(te.RUNNING);
@@ -261,8 +261,8 @@ public class LaserHelper {
 					}
 				}
 
-				x += direction.offsetX;
-				y += direction.offsetZ;
+				x += direction.getFrontOffsetX();
+				y += direction.getFrontOffsetZ();
 
 				step--;
 				te.laserHelper.position++;
@@ -290,8 +290,8 @@ public class LaserHelper {
 
 		public void setAim(int x, int y) {
 			if (MiscUtils.isServer())
-				CommonProxy.networkWrapper.sendToDimension(new PacketAssemblerUpdate(isRunning, x, y, id, te.xCoord,
-						te.yCoord, te.zCoord), te.getWorldObj().provider.dimensionId);
+				CommonProxy.networkWrapper.sendToDimension(new PacketAssemblerUpdate(isRunning, x, y, EnumFacing.getHorizontal(id), te.getPos().getX(),
+						te.getPos().getY(), te.getPos().getZ()), te.getWorld().provider.getDimension());
 
 			this.x = x;
 			this.y = y;
@@ -330,16 +330,16 @@ public class LaserHelper {
 
 			switch (id) {
 				case 0:
-					direction = ForgeDirection.WEST;
+					direction = EnumFacing.WEST;
 					break;
 				case 1:
-					direction = ForgeDirection.SOUTH;
+					direction = EnumFacing.SOUTH;
 					break;
 				case 2:
-					direction = ForgeDirection.EAST;
+					direction = EnumFacing.EAST;
 					break;
 				default:
-					direction = ForgeDirection.NORTH;
+					direction = EnumFacing.NORTH;
 					break;
 			}
 
@@ -349,9 +349,9 @@ public class LaserHelper {
 				lastModified = CommonProxy.serverTicks;
 
 			reload();
-			if (te.getWorldObj() != null && !MiscUtils.isClient())
-				CommonProxy.networkWrapper.sendToDimension(new PacketAssemblerUpdate(isRunning, x, y, id, te.xCoord,
-						te.yCoord, te.zCoord), te.getWorldObj().provider.dimensionId);
+			if (te.getWorld() != null && !MiscUtils.isClient())
+				CommonProxy.networkWrapper.sendToDimension(new PacketAssemblerUpdate(isRunning, x, y, EnumFacing.getHorizontal(id), te.getPos().getX(),
+						te.getPos().getY(), te.getPos().getZ()), te.getWorld().provider.getDimension());
 		}
 
 		public boolean canUpdate() {
@@ -360,7 +360,7 @@ public class LaserHelper {
 
 		public void update(float partialTicks) {
 			if (!isActive) {
-				if (te.getWorldObj().isRemote) {
+				if (te.getWorld().isRemote) {
 					iZ = getInterpolated(partialTicks, lastAZ, aZ, rotTimeAZ);
 					iY = getInterpolated(partialTicks, lastAY, aY, rotTimeAY);
 					if (iZ == aZ && iY == aY) {

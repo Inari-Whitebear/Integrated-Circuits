@@ -8,6 +8,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.MovingObjectPosition;
 import codechicken.lib.data.MCDataInput;
 import codechicken.lib.vec.Cuboid6;
+import net.minecraft.util.math.RayTraceResult;
 
 public interface IGate {
 	public ISocketBase getProvider();
@@ -26,9 +27,9 @@ public interface IGate {
 
 	public void read(byte discr, MCDataInput packet);
 
-	public boolean activate(EntityPlayer player, MovingObjectPosition hit, ItemStack item);
+	public boolean activate(EntityPlayer player, RayTraceResult hit, ItemStack item);
 
-	public void onActivatedWithScrewdriver(EntityPlayer player, MovingObjectPosition hit, ItemStack item);
+	public void onActivatedWithScrewdriver(EntityPlayer player, RayTraceResult hit, ItemStack item);
 
 	public void onRotated();
 
@@ -40,7 +41,7 @@ public interface IGate {
 
 	public ItemStack getItemStack();
 
-	public ItemStack pickItem(MovingObjectPosition hit);
+	public ItemStack pickItem(RayTraceResult hit);
 
 	public Cuboid6 getDimension();
 

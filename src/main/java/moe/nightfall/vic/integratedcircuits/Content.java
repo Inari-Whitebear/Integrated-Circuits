@@ -1,15 +1,7 @@
 package moe.nightfall.vic.integratedcircuits;
 
-import cpw.mods.fml.common.registry.GameRegistry;
-import moe.nightfall.vic.integratedcircuits.item.Item7Segment;
-import moe.nightfall.vic.integratedcircuits.item.ItemBase;
-import moe.nightfall.vic.integratedcircuits.item.ItemCircuit;
-import moe.nightfall.vic.integratedcircuits.item.ItemFloppyDisk;
-import moe.nightfall.vic.integratedcircuits.item.ItemPCB;
-import moe.nightfall.vic.integratedcircuits.item.ItemPCBPrint;
-import moe.nightfall.vic.integratedcircuits.item.ItemScrewdriver;
-import moe.nightfall.vic.integratedcircuits.item.ItemSocket;
-import moe.nightfall.vic.integratedcircuits.item.ItemSocketFMP;
+import moe.nightfall.vic.integratedcircuits.item.*;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import moe.nightfall.vic.integratedcircuits.tile.BlockAssembler;
 import moe.nightfall.vic.integratedcircuits.tile.BlockCAD;
 import moe.nightfall.vic.integratedcircuits.tile.BlockPrinter;
@@ -48,8 +40,8 @@ public final class Content {
 	public static void init() {
 
 		itemSocket = new ItemSocket();
-		if (IntegratedCircuits.isFMPLoaded)
-			Content.itemSocketFMP = new ItemSocketFMP();
+		if (IntegratedCircuits.isMCMPLoaded)
+			Content.itemSocketFMP = new ItemSocketMCMP();
 
 		itemCircuit = new ItemCircuit();
 		item7Segment = new Item7Segment();
@@ -73,9 +65,9 @@ public final class Content {
 		blockAssembler = new BlockAssembler();
 		blockPrinter = new BlockPrinter();
 
-		GameRegistry.registerBlock(Content.blockPCBLayout, Constants.MOD_ID + ".pcblayout");
-		GameRegistry.registerBlock(Content.blockAssembler, Constants.MOD_ID + ".assembler");
-		GameRegistry.registerBlock(Content.blockPrinter, Constants.MOD_ID + ".pcbprinter");
+		GameRegistry.register(Content.blockPCBLayout.setRegistryName("pcblayout"));
+		GameRegistry.register(Content.blockAssembler.setRegistryName("assembler"));
+		GameRegistry.register(Content.blockPrinter.setRegistryName("pcbprinter"));
 
 		GameRegistry.registerTileEntity(TileEntityCAD.class, Constants.MOD_ID + ".pcblayoutcad");
 		GameRegistry.registerTileEntity(TileEntityAssembler.class, Constants.MOD_ID + ".assembler");

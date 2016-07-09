@@ -10,8 +10,8 @@ import moe.nightfall.vic.integratedcircuits.api.gate.ISocketWrapper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
 import buildcraft.api.transport.IPipeTile;
 import buildcraft.api.transport.PipeWire;
 import buildcraft.api.transport.pluggable.IPipePluggableDynamicRenderer;
@@ -26,7 +26,7 @@ import codechicken.lib.vec.Vector3;
 
 import com.google.common.collect.Lists;
 
-import cpw.mods.fml.common.network.ByteBufUtils;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 
 public class GatePipePluggable extends PipePluggable implements ISocketWrapper {
 
@@ -41,7 +41,7 @@ public class GatePipePluggable extends PipePluggable implements ISocketWrapper {
 		System.out.println("Creating new instance");
 	}
 
-	public GatePipePluggable(ItemStack stack, BlockCoord pos, World world, ForgeDirection dir) {
+	public GatePipePluggable(ItemStack stack, BlockCoord pos, World world, EnumFacing dir) {
 		this.pos = pos;
 		this.world = world;
 		socket.setGate(stack, null);
@@ -71,7 +71,7 @@ public class GatePipePluggable extends PipePluggable implements ISocketWrapper {
 	}
 
 	@Override
-	public void update(IPipeTile pipe, ForgeDirection direction) {
+	public void update(IPipeTile pipe, EnumFacing direction) {
 		if (this.pipe == null) {
 			this.pipe = pipe;
 			this.world = pipe.getWorld();
@@ -97,12 +97,12 @@ public class GatePipePluggable extends PipePluggable implements ISocketWrapper {
 	}
 
 	@Override
-	public boolean isBlocking(IPipeTile pipe, ForgeDirection direction) {
+	public boolean isBlocking(IPipeTile pipe, EnumFacing direction) {
 		return true;
 	}
 
 	@Override
-	public AxisAlignedBB getBoundingBox(ForgeDirection side) {
+	public AxisAlignedBB getBoundingBox(EnumFacing side) {
 		if (boundingBox == null) {
 			boundingBox = socket.getGate().getDimension().copy().apply(new Scale(1 / 16D)
 				.with(new Translation(0, 0.85, 0))

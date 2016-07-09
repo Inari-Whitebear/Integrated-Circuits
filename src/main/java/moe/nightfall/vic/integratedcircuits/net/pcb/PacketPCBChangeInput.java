@@ -12,8 +12,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.PacketBuffer;
-import cpw.mods.fml.common.network.NetworkRegistry.TargetPoint;
-import cpw.mods.fml.relauncher.Side;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class PacketPCBChangeInput extends PacketTileEntity<PacketPCBChangeInput> {
 	private boolean input;
@@ -24,7 +25,7 @@ public class PacketPCBChangeInput extends PacketTileEntity<PacketPCBChangeInput>
 	}
 
 	public PacketPCBChangeInput(boolean input, int[] io, int con, TileEntityCAD tileEntityCAD) {
-		super(tileEntityCAD.xCoord, tileEntityCAD.yCoord, tileEntityCAD.zCoord);
+		super(tileEntityCAD.getPos().getX(), tileEntityCAD.getPos().getY(), tileEntityCAD.getPos().getZ());
 		this.io = io;
 		this.input = input;
 		this.con = con;
@@ -65,7 +66,7 @@ public class PacketPCBChangeInput extends PacketTileEntity<PacketPCBChangeInput>
 
 	@Override
 	public void process(EntityPlayer player, Side side) {
-		TileEntityCAD te = (TileEntityCAD) player.worldObj.getTileEntity(xCoord, yCoord, zCoord);
+		TileEntityCAD te = (TileEntityCAD) player.worldObj.getTileEntity(new BlockPos(xCoord, yCoord, zCoord));
 		if (te == null)
 			return;
 		if (input)
@@ -80,7 +81,7 @@ public class PacketPCBChangeInput extends PacketTileEntity<PacketPCBChangeInput>
 		
 		if (input && side == Side.SERVER) {
 			te.getCircuitData().updateInput();
-			CommonProxy.networkWrapper.sendToAllAround(this, new TargetPoint(te.getWorldObj().getWorldInfo()
+			CommonProxy.networkWrapper.sendToAllAround(this, new TargetPoint(te.getWorld().getWorldInfo()
 				.getVanillaDimension(), xCoord, yCoord, zCoord, 8));
 		}
 		if (side == Side.CLIENT && Minecraft.getMinecraft().currentScreen instanceof GuiCAD)

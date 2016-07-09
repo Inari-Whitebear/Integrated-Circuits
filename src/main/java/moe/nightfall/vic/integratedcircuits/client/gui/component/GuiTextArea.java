@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import moe.nightfall.vic.integratedcircuits.misc.Vec2i;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.input.Keyboard;
@@ -12,7 +13,6 @@ import org.lwjgl.opengl.GL11;
 
 import moe.nightfall.vic.integratedcircuits.misc.MiscUtils;
 import moe.nightfall.vic.integratedcircuits.misc.RenderUtils;
-import moe.nightfall.vic.integratedcircuits.misc.Vec2;
 import moe.nightfall.vic.integratedcircuits.proxy.ClientProxy;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -25,8 +25,8 @@ public class GuiTextArea extends Gui {
 	private List<StringBuilder> textBuffer = new ArrayList<StringBuilder>();
 	private List<Integer> cachedWidth = new ArrayList<Integer>();
 
-	protected Vec2 cursorPosition = Vec2.zero;
-	protected Vec2 selectionStart = Vec2.zero;
+	protected Vec2i cursorPosition = Vec2i.zero;
+	protected Vec2i selectionStart = Vec2i.zero;
 	protected int xCoord, yCoord;
 	protected int width;
 
@@ -47,8 +47,8 @@ public class GuiTextArea extends Gui {
 		this.yCoord = yCoord;
 	}
 
-	public Vec2 getSize() {
-		return new Vec2(width + border * 2, textBuffer.size() * fontRenderer.FONT_HEIGHT + border * 2);
+	public Vec2i getSize() {
+		return new Vec2i(width + border * 2, textBuffer.size() * fontRenderer.FONT_HEIGHT + border * 2);
 	}
 
 	public void render(int mx, int my) {
@@ -57,7 +57,7 @@ public class GuiTextArea extends Gui {
 			return;
 
 		if (backgroundColor != 0) {
-			Vec2 size = getSize();
+			Vec2i size = getSize();
 			drawRect(xCoord, yCoord, xCoord + size.x, yCoord + size.y, backgroundColor);
 		}
 
@@ -88,9 +88,9 @@ public class GuiTextArea extends Gui {
 	}
 
 	private void renderSelection(int color) {
-		Pair<Vec2, Vec2> selection = selection();
-		Vec2 first = selection.getLeft();
-		Vec2 last = selection.getRight();
+		Pair<Vec2i, Vec2i> selection = selection();
+		Vec2i first = selection.getLeft();
+		Vec2i last = selection.getRight();
 
 		int xCoord = this.xCoord + border;
 		int yCoord = this.yCoord + border;
@@ -122,7 +122,7 @@ public class GuiTextArea extends Gui {
 		if (!isVisible() || button != 0)
 			return;
 
-		Vec2 intersection = intersect(mx, my);
+		Vec2i intersection = intersect(mx, my);
 		if (intersection == null) {
 			setActive(false);
 			return;
@@ -150,7 +150,7 @@ public class GuiTextArea extends Gui {
 
 	private static final Pattern patternWord = Pattern.compile("\\b");
 
-	private void selectWord(Vec2 intersection) {
+	private void selectWord(Vec2i intersection) {
 		StringBuilder line = getLine(intersection.y);
 
 		Matcher forward = patternWord.matcher(line);
@@ -159,16 +159,16 @@ public class GuiTextArea extends Gui {
 		int next = forward.find(intersection.x) ? forward.start() : getLineLength(intersection.y);
 		int prev = backward.find(line.length() - intersection.x) ? line.length() - backward.start() : 0;
 
-		selectionStart = new Vec2(prev, intersection.y);
-		cursorPosition = new Vec2(next, intersection.y);
+		selectionStart = new Vec2i(prev, intersection.y);
+		cursorPosition = new Vec2i(next, intersection.y);
 	}
 
-	private void selectLine(Vec2 intersection) {
-		selectionStart = new Vec2(0, intersection.y);
+	private void selectLine(Vec2i intersection) {
+		selectionStart = new Vec2i(0, intersection.y);
 		if (intersection.y + 1 >= textBuffer.size()) {
-			cursorPosition = new Vec2(getLineLength(intersection.y), intersection.y);
+			cursorPosition = new Vec2i(getLineLength(intersection.y), intersection.y);
 		} else {
-			cursorPosition = new Vec2(0, intersection.y + 1);
+			cursorPosition = new Vec2i(0, intersection.y + 1);
 		}
 	}
 
@@ -176,7 +176,7 @@ public class GuiTextArea extends Gui {
 		if (!isVisible() || !isActive())
 			return;
 
-		Vec2 intersection = intersect(mx, my);
+		Vec2i intersection = intersect(mx, my);
 		if (intersection != null) {
 			cursorPosition = intersection;
 		}
@@ -239,7 +239,7 @@ public class GuiTextArea extends Gui {
 	}
 
 	public void selectAll() {
-		selectionStart = Vec2.zero;
+		selectionStart = Vec2i.zero;
 		cursorPosition = getLastPosition();
 	}
 
@@ -248,12 +248,12 @@ public class GuiTextArea extends Gui {
 			deleteSelected();
 			return;
 		}
-		if (cursorPosition.equals(Vec2.zero))
+		if (cursorPosition.equals(Vec2i.zero))
 			return;
 		if (cursorPosition.x == 0) {
 			StringBuilder line = getCurrentLine();
 			removeFromCache(cursorPosition.y);
-			Vec2 newCursorPosition = new Vec2(getLineLength(cursorPosition.y - 1), cursorPosition.y - 1);
+			Vec2i newCursorPosition = new Vec2i(getLineLength(cursorPosition.y - 1), cursorPosition.y - 1);
 			getLine(cursorPosition.y - 1).append(line);
 			refreshLine(cursorPosition.y - 1);
 			setCursorPositionInternal(newCursorPosition);
@@ -261,7 +261,7 @@ public class GuiTextArea extends Gui {
 		} else {
 			getCurrentLine().deleteCharAt(cursorPosition.x - 1);
 			refreshLine(cursorPosition.y);
-			setCursorPositionInternal(new Vec2(cursorPosition.x - 1, cursorPosition.y));
+			setCursorPositionInternal(new Vec2i(cursorPosition.x - 1, cursorPosition.y));
 			refreshWidth();
 		}
 	}
@@ -301,7 +301,7 @@ public class GuiTextArea extends Gui {
 		}
 
 		addToCache(cursorPosition.y + 1, sb);
-		Vec2 newCursorPosition = new Vec2(getLineLength(cursorPosition.y + 1), cursorPosition.y + 1);
+		Vec2i newCursorPosition = new Vec2i(getLineLength(cursorPosition.y + 1), cursorPosition.y + 1);
 		sb.append(currentLine.substring(cursorPosition.x, currentLine.length()));
 		getCurrentLine().delete(cursorPosition.x, currentLine.length());
 
@@ -326,26 +326,26 @@ public class GuiTextArea extends Gui {
 					// We're starting with some whitespace, move forward
 					Matcher matcher = patternFirstNonWhitespace.matcher(getCurrentLine());
 					if (matcher.find()) {
-						setCursorPositionInternal(new Vec2(matcher.start(), cursorPosition.y));
+						setCursorPositionInternal(new Vec2i(matcher.start(), cursorPosition.y));
 					}
 
 					// Remove some spaces
 					if (cursorPosition.x == 1) {
 						// Got one to remove...
 						getCurrentLine().deleteCharAt(cursorPosition.x - 1);
-						setCursorPositionInternal(new Vec2(cursorPosition.x - 1, cursorPosition.y));
+						setCursorPositionInternal(new Vec2i(cursorPosition.x - 1, cursorPosition.y));
 					} else if (cursorPosition.x > 0) {
 						// Got two to remove!
 						getCurrentLine().delete(cursorPosition.x - 2, cursorPosition.x);
-						setCursorPositionInternal(new Vec2(cursorPosition.x - 2, cursorPosition.y));
+						setCursorPositionInternal(new Vec2i(cursorPosition.x - 2, cursorPosition.y));
 					}
 					refreshLine(cursorPosition.y);
 				} else {
 					// Move the cursor back
-					setCursorPositionInternal(new Vec2(Math.max(cursorPosition.x - 2 + cursorPosition.x % 2, 0), cursorPosition.y));
+					setCursorPositionInternal(new Vec2i(Math.max(cursorPosition.x - 2 + cursorPosition.x % 2, 0), cursorPosition.y));
 				}
 			} else {
-				Pair<Vec2, Vec2> selection = selection();
+				Pair<Vec2i, Vec2i> selection = selection();
 				// Tab multiple lines
 				for (int i = selection.getLeft().y; i <= selection().getRight().y; i++) {
 					String line = getLine(i).toString();
@@ -373,11 +373,11 @@ public class GuiTextArea extends Gui {
 					// We're starting with some whitespace, move forward
 					Matcher matcher = patternFirstNonWhitespace.matcher(getCurrentLine());
 					if (matcher.find()) {
-						setCursorPositionInternal(new Vec2(matcher.start(), cursorPosition.y));
+						setCursorPositionInternal(new Vec2i(matcher.start(), cursorPosition.y));
 					}
 				}
 			} else {
-				Pair<Vec2, Vec2> selection = selection();
+				Pair<Vec2i, Vec2i> selection = selection();
 				// Tab multiple lines
 				for (int i = selection.getLeft().y; i <= selection().getRight().y; i++) {
 					getLine(i).insert(0, "  ");
@@ -391,13 +391,13 @@ public class GuiTextArea extends Gui {
 		refreshWidth();
 	}
 
-	private void tab_adjustSelection(Pair<Vec2, Vec2> selection) {
+	private void tab_adjustSelection(Pair<Vec2i, Vec2i> selection) {
 		boolean flip = cursorPosition == selection.getLeft();
-		selectionStart = new Vec2(0, selection.getLeft().y);
-		cursorPosition = new Vec2(getLineLength(selection.getRight().y), selection.getRight().y);
+		selectionStart = new Vec2i(0, selection.getLeft().y);
+		cursorPosition = new Vec2i(getLineLength(selection.getRight().y), selection.getRight().y);
 
 		if (flip) {
-			Vec2 temp = selectionStart;
+			Vec2i temp = selectionStart;
 			selectionStart = cursorPosition;
 			cursorPosition = temp;
 		}
@@ -409,7 +409,7 @@ public class GuiTextArea extends Gui {
 
 		int x = fontRenderer.getStringWidth(getCurrentLine().substring(0, cursorPosition.x));
 		x = fontRenderer.trimStringToWidth(getLine(cursorPosition.y - 1).toString(), x).length();
-		setCursorPositionInternal(new Vec2(x, cursorPosition.y - 1));
+		setCursorPositionInternal(new Vec2i(x, cursorPosition.y - 1));
 	}
 
 	private void down() {
@@ -418,16 +418,16 @@ public class GuiTextArea extends Gui {
 
 		int x = fontRenderer.getStringWidth(getCurrentLine().substring(0, cursorPosition.x));
 		x = fontRenderer.trimStringToWidth(getLine(cursorPosition.y + 1).toString(), x).length();
-		setCursorPositionInternal(new Vec2(x, cursorPosition.y + 1));
+		setCursorPositionInternal(new Vec2i(x, cursorPosition.y + 1));
 	}
 
 	private void left() {
-		if (cursorPosition.equals(Vec2.zero))
+		if (cursorPosition.equals(Vec2i.zero))
 			return;
 		if (cursorPosition.x == 0) {
-			setCursorPositionInternal(new Vec2(getLineLength(cursorPosition.y - 1), cursorPosition.y - 1));
+			setCursorPositionInternal(new Vec2i(getLineLength(cursorPosition.y - 1), cursorPosition.y - 1));
 		} else {
-			setCursorPositionInternal(new Vec2(cursorPosition.x - 1, cursorPosition.y));
+			setCursorPositionInternal(new Vec2i(cursorPosition.x - 1, cursorPosition.y));
 		}
 	}
 
@@ -435,13 +435,13 @@ public class GuiTextArea extends Gui {
 		if (cursorPosition.equals(getLastPosition()))
 			return;
 		if (cursorPosition.x >= getLineLength(cursorPosition.y)) {
-			setCursorPositionInternal(new Vec2(0, cursorPosition.y + 1));
+			setCursorPositionInternal(new Vec2i(0, cursorPosition.y + 1));
 		} else {
-			setCursorPositionInternal(new Vec2(cursorPosition.x + 1, cursorPosition.y));
+			setCursorPositionInternal(new Vec2i(cursorPosition.x + 1, cursorPosition.y));
 		}
 	}
 
-	private Vec2 intersect(int mx, int my) {
+	private Vec2i intersect(int mx, int my) {
 		mx -= border;
 		my -= border;
 
@@ -455,7 +455,7 @@ public class GuiTextArea extends Gui {
 			return null;
 		String s = fontRenderer.trimStringToWidth(textBuffer.get(y).toString(), mx - xCoord);
 		x = s.length();
-		return new Vec2(x, y);
+		return new Vec2i(x, y);
 	}
 
 	protected StringBuilder getLine(int line) {
@@ -502,15 +502,15 @@ public class GuiTextArea extends Gui {
 		return textBuffer.get(line).length();
 	}
 
-	public Vec2 getLastPosition() {
-		return new Vec2(textBuffer.get(textBuffer.size() - 1).length(), textBuffer.size() - 1);
+	public Vec2i getLastPosition() {
+		return new Vec2i(textBuffer.get(textBuffer.size() - 1).length(), textBuffer.size() - 1);
 	}
 
-	public Vec2 getSelectionStart() {
+	public Vec2i getSelectionStart() {
 		return selectionStart;
 	}
 
-	public Vec2 getCursorPosition() {
+	public Vec2i getCursorPosition() {
 		return cursorPosition;
 	}
 
@@ -553,8 +553,8 @@ public class GuiTextArea extends Gui {
 		return this;
 	}
 
-	protected Pair<Vec2, Vec2> selection() {
-		Vec2 first, last;
+	protected Pair<Vec2i, Vec2i> selection() {
+		Vec2i first, last;
 		if (selectionStart.y < cursorPosition.y || (selectionStart.y == cursorPosition.y && selectionStart.x < cursorPosition.x)) {
 			first = selectionStart;
 			last = cursorPosition;
@@ -562,16 +562,16 @@ public class GuiTextArea extends Gui {
 			first = cursorPosition;
 			last = selectionStart;
 		}
-		return new ImmutablePair<Vec2, Vec2>(first, last);
+		return new ImmutablePair<Vec2i, Vec2i>(first, last);
 	}
 
 	public String getSelectedText() {
 		if (!hasSelection())
 			return "";
 
-		Pair<Vec2, Vec2> selection = selection();
-		Vec2 first = selection.getLeft();
-		Vec2 last = selection.getRight();
+		Pair<Vec2i, Vec2i> selection = selection();
+		Vec2i first = selection.getLeft();
+		Vec2i last = selection.getRight();
 
 		List<StringBuilder> selectedLines = textBuffer.subList(first.y, last.y + 1);
 		if (selectedLines.size() == 1) {
@@ -599,9 +599,9 @@ public class GuiTextArea extends Gui {
 		if (!hasSelection())
 			return;
 
-		Pair<Vec2, Vec2> selection = selection();
-		Vec2 first = selection.getLeft();
-		Vec2 last = selection.getRight();
+		Pair<Vec2i, Vec2i> selection = selection();
+		Vec2i first = selection.getLeft();
+		Vec2i last = selection.getRight();
 
 		StringBuilder firstLine = textBuffer.get(first.y);
 		if (first.y == last.y) {
@@ -638,11 +638,11 @@ public class GuiTextArea extends Gui {
 		insert(text, cursorPosition, true);
 	}
 
-	public void insert(String text, Vec2 pos) {
+	public void insert(String text, Vec2i pos) {
 		insert(text, cursorPosition, false);
 	}
 
-	protected void insert(String text, Vec2 pos, boolean advanceCursor) {
+	protected void insert(String text, Vec2i pos, boolean advanceCursor) {
 		clearSelection();
 		if (text == null)
 			throw new NullPointerException();
@@ -668,11 +668,11 @@ public class GuiTextArea extends Gui {
 				// TODO min shouldn't be needed but I've seen this crashing
 				// randomly
 				int newCursorY = cursorPosition.y + toInsert.length - 1;
-				setCursorPositionInternal(new Vec2(Math.min(toInsert[toInsert.length - 1].length(), getLineLength(newCursorY)), newCursorY));
+				setCursorPositionInternal(new Vec2i(Math.min(toInsert[toInsert.length - 1].length(), getLineLength(newCursorY)), newCursorY));
 			}
 		} else {
 			if (advanceCursor)
-				setCursorPositionInternal(new Vec2(Math.min(cursorPosition.x + toInsert[0].length(), getLineLength(cursorPosition.y)), cursorPosition.y));
+				setCursorPositionInternal(new Vec2i(Math.min(cursorPosition.x + toInsert[0].length(), getLineLength(cursorPosition.y)), cursorPosition.y));
 			insertLine.append(endOfLine);
 		}
 
@@ -685,24 +685,24 @@ public class GuiTextArea extends Gui {
 		insert(text);
 	}
 
-	public void setCursorPosition(Vec2 position) {
+	public void setCursorPosition(Vec2i position) {
 		if (position.x < 0 || position.y < 0)
 			throw new IndexOutOfBoundsException();
 		if (position.y > textBuffer.size()) {
 			position = getLastPosition();
 		} else if (position.x > getLineLength(position.y)) {
-			position = new Vec2(getLineLength(position.y), position.y);
+			position = new Vec2i(getLineLength(position.y), position.y);
 		}
 		setCursorPositionInternal(position);
 	}
 
-	protected void setCursorPositionInternal(Vec2 position) {
+	protected void setCursorPositionInternal(Vec2i position) {
 		this.cursorPosition = position;
 		this.selectionStart = position;
 	}
 
 	public GuiTextArea setText(String text) {
-		setCursorPositionInternal(Vec2.zero);
+		setCursorPositionInternal(Vec2i.zero);
 		textBuffer.clear();
 		cachedWidth.clear();
 		addToCache(new StringBuilder());
@@ -722,7 +722,7 @@ public class GuiTextArea extends Gui {
 		return sb.toString();
 	}
 
-	protected void checkInside(Vec2 pos) {
+	protected void checkInside(Vec2i pos) {
 		if (pos.x < 0 || pos.y < 0 || pos.y >= textBuffer.size())
 			throw new IndexOutOfBoundsException();
 		if (pos.x > getLineLength(pos.y))

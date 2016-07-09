@@ -8,8 +8,8 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.StatCollector;
-import codechicken.lib.vec.BlockCoord;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.translation.I18n;
 
 public class Item7Segment extends ItemGate implements IDyeable {
 	public Item7Segment() {
@@ -31,16 +31,18 @@ public class Item7Segment extends ItemGate implements IDyeable {
 	@Override
 	public String getItemStackDisplayName(ItemStack stack) {
 		return MiscUtils.getLocalizedColor(stack.getItemDamage()) + " "
-				+ StatCollector.translateToLocal(stack.getUnlocalizedName() + ".name");
+				+ I18n.translateToLocal(stack.getUnlocalizedName() + ".name");
 	}
-
+/*
 	@Override
-	public String getGateID(ItemStack stack, EntityPlayer player, BlockCoord pos) {
+	public String getGateID(ItemStack stack, EntityPlayer player, BlockPos pos) {
 		return "7segment";
 	}
 	
 	@Override
 	public Boolean usedUpOnPlace(EntityPlayer player) {
 		return true;
-	}
+	}*/
+
+
 }

@@ -1,20 +1,21 @@
 package moe.nightfall.vic.integratedcircuits;
 
-import codechicken.microblock.ItemMicroPart;
-import cpw.mods.fml.common.registry.GameData;
-import cpw.mods.fml.common.registry.GameRegistry;
+//import mcmultipart.item.ItemMultiPart;
+//import net.minecraftforge.fml.common.registry.GameData;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import moe.nightfall.vic.integratedcircuits.item.recipe.RecipeCircuit;
 import moe.nightfall.vic.integratedcircuits.item.recipe.RecipeDyeable;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
-import net.minecraft.item.Item;
+//import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
-import net.minecraftforge.oredict.ShapedOreRecipe;
+//import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
 
 public class Recipes {
 	public static void loadRecipes() {
+		/*
 		// Oredict
 		Item bpSilicon = GameData.getItemRegistry().getObject("bluepower:silicon_wafer");
 		if (bpSilicon != null)
@@ -23,8 +24,9 @@ public class Recipes {
 		Item prCorePart = GameData.getItemRegistry().getObject("ProjRed|Core:projectred.core.part");
 		if (prCorePart != null)
 			OreDictionary.registerOre("silicon", new ItemStack(prCorePart, 1, 12));
+			*/
 
-		if (!(IntegratedCircuits.isPRLoaded || IntegratedCircuits.isBPLoaded)) {
+		//if (!(IntegratedCircuits.isPRLoaded || IntegratedCircuits.isBPLoaded)) {
 			OreDictionary.registerOre("silicon", Content.itemSilicon);
 
 			GameRegistry.addRecipe(new ItemStack(Content.itemCoalCompound),
@@ -32,22 +34,23 @@ public class Recipes {
 					"#c#",
 					"###",
 
-					'#', Blocks.sand,
-					'c', Items.coal);
+					'#', Blocks.SAND,
+					'c', Items.COAL);
 
 			GameRegistry.addRecipe(new ItemStack(Content.item7Segment),
 					"srs",
 					"r#r",
 					"sps",
 
-					'r', Items.redstone,
-					's', Blocks.stone,
-					'#', Blocks.glass_pane,
+					'r', Items.REDSTONE,
+					's', Blocks.STONE,
+					'#', Blocks.GLASS_PANE,
 					'p', Content.itemPCBChip);
 
 			GameRegistry.addSmelting(Content.itemCoalCompound, new ItemStack(Content.itemSilicon,
 					8), 0.5F);
-		} else {
+		/*} else {
+			
 			Item bpStoneWafer = GameData.getItemRegistry().getObject("bluepower:stone_tile");
 			if (bpStoneWafer != null)
 				OreDictionary.registerOre("stoneWafer", bpStoneWafer);
@@ -55,11 +58,14 @@ public class Recipes {
 			Item bpStoneWire = GameData.getItemRegistry().getObject("bluepower:redstone_wire_tile");
 			if (bpStoneWire != null)
 				OreDictionary.registerOre("stoneWire", bpStoneWire);
+			
 
+			
 			if (prCorePart != null) {
 				OreDictionary.registerOre("stoneWafer", new ItemStack(prCorePart, 1, 0));
 				OreDictionary.registerOre("stoneWire", new ItemStack(prCorePart, 1, 2));
 			}
+			
 
 			GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(Content.item7Segment),
 					"srs",
@@ -68,9 +74,9 @@ public class Recipes {
 
 					'r', "stoneWire",
 					's', "stoneWafer",
-					'#', Blocks.glass_pane,
+					'#', Blocks.GLASS_PANE,
 					'p', Content.itemPCBChip));
-		}
+		}*/
 
 		GameRegistry.addRecipe(new ShapelessOreRecipe(new ItemStack(Content.itemSiliconDrop, 8), "silicon"));
 
@@ -80,7 +86,7 @@ public class Recipes {
 				"iri",
 
 				'i', Content.itemSiliconDrop,
-				'r', Items.redstone,
+				'r', Items.REDSTONE,
 				'#', Content.itemPCB);
 
 		GameRegistry.addRecipe(new ItemStack(Content.itemPCBChip),
@@ -89,7 +95,7 @@ public class Recipes {
 				"rir",
 
 				'i', Content.itemSiliconDrop,
-				'r', Items.redstone,
+				'r', Items.REDSTONE,
 				'#', Content.itemPCB);
 
 		GameRegistry.addRecipe(new ItemStack(Content.blockPCBLayout),
@@ -97,9 +103,9 @@ public class Recipes {
 				"i#i",
 				"sps",
 
-				'i', Items.iron_ingot,
-				'#', Blocks.glass_pane,
-				's', Blocks.stone,
+				'i', Items.IRON_INGOT,
+				'#', Blocks.GLASS_PANE,
+				's', Blocks.STONE,
 				'p', Content.itemPCBChip);
 
 		GameRegistry.addRecipe(new ItemStack(Content.blockAssembler),
@@ -107,14 +113,14 @@ public class Recipes {
 				"#d#",
 				"sps",
 
-				'd', Items.diamond,
-				'#', Blocks.glass_pane,
-				's', Blocks.stone,
+				'd', Items.DIAMOND,
+				'#', Blocks.GLASS_PANE,
+				's', Blocks.STONE,
 				'p', Content.itemPCBChip);
 
 		GameRegistry.addRecipe(new ItemStack(Content.blockPrinter), "iii", "#d#", "sps",
 
-		'i', Items.iron_ingot, '#', Blocks.piston, 's', Blocks.stone, 'p', Content.itemPCBChip);
+		'i', Items.IRON_INGOT, '#', Blocks.PISTON, 's', Blocks.STONE, 'p', Content.itemPCBChip);
 
 		GameRegistry.addRecipe(new ItemStack(Content.itemFloppyDisk),
 				"iii",
@@ -122,7 +128,7 @@ public class Recipes {
 				"iii",
 
 				'i', Content.itemSiliconDrop,
-				'#', Items.redstone);
+				'#', Items.REDSTONE);
 
 		GameRegistry.addRecipe(new ItemStack(Content.itemPCB),
 				"iii",
@@ -136,7 +142,7 @@ public class Recipes {
 				" id",
 				" di",
 
-				'i', Items.iron_ingot,
+				'i', Items.IRON_INGOT,
 				'd', Content.itemSiliconDrop);
 
 		GameRegistry.addRecipe(new ItemStack(Content.itemSolderingIron),
@@ -144,17 +150,17 @@ public class Recipes {
 				" ir",
 				" ri",
 
-				'i', Items.iron_ingot,
-				'r', Items.redstone);
+				'i', Items.IRON_INGOT,
+				'r', Items.REDSTONE);
 
 		GameRegistry.addRecipe(new ItemStack(Content.itemLaser),
 				"oii",
 				"p##",
 				"oii",
 
-				'i', Items.redstone,
-				'#', Items.diamond,
-				'o', Blocks.obsidian,
+				'i', Items.REDSTONE,
+				'#', Items.DIAMOND,
+				'o', Blocks.OBSIDIAN,
 				'p', Content.itemPCBChip);
 
 		GameRegistry.addRecipe(new ItemStack(Content.itemLaser),
@@ -162,9 +168,9 @@ public class Recipes {
 				"i#i",
 				"opo",
 
-				'i', Items.redstone,
-				'#', Items.diamond,
-				'o', Blocks.obsidian,
+				'i', Items.REDSTONE,
+				'#', Items.DIAMOND,
+				'o', Blocks.OBSIDIAN,
 				'p', Content.itemPCBChip);
 
 		GameRegistry.addRecipe(new ItemStack(Content.itemSocket),
@@ -172,19 +178,20 @@ public class Recipes {
 				"###",
 
 				'i', Content.itemSiliconDrop,
-				'r', Items.redstone,
-				'#', Blocks.stone_slab);
+				'r', Items.REDSTONE,
+				'#', Blocks.STONE_SLAB);
 
-		if (IntegratedCircuits.isFMPLoaded) {
+		/*
+		if (IntegratedCircuits.isMCMPLoaded) {
 
 			GameRegistry.addRecipe(new ItemStack(Content.itemSocketFMP),
 					"iri",
 					"###",
 
 					'i', Content.itemSiliconDrop,
-					'r', Items.redstone,
+					'r', Items.REDSTONE,
 					'#', ItemMicroPart.create(1, "tile.stone"));
-		}
+		}*/
 
 		// TODO NEI integration? Rewrite using multiple recipes?
 		GameRegistry.addRecipe(new RecipeDyeable());

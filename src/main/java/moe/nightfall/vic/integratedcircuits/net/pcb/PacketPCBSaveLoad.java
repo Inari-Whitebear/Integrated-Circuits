@@ -10,8 +10,9 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
-import cpw.mods.fml.common.network.NetworkRegistry.TargetPoint;
-import cpw.mods.fml.relauncher.Side;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class PacketPCBSaveLoad extends PacketTileEntity<PacketPCBSaveLoad> {
 	private boolean write;
@@ -38,7 +39,7 @@ public class PacketPCBSaveLoad extends PacketTileEntity<PacketPCBSaveLoad> {
 
 	@Override
 	public void process(EntityPlayer player, Side side) {
-		TileEntityCAD te = (TileEntityCAD) player.worldObj.getTileEntity(xCoord, yCoord, zCoord);
+		TileEntityCAD te = (TileEntityCAD) player.worldObj.getTileEntity(new BlockPos(xCoord, yCoord, zCoord));
 		if (te != null) {
 			if (write) {
 				ItemStack floppy = te.getStackInSlot(0);
@@ -46,7 +47,7 @@ public class PacketPCBSaveLoad extends PacketTileEntity<PacketPCBSaveLoad> {
 					NBTTagCompound comp = floppy.getTagCompound();
 					if (comp == null)
 						comp = new NBTTagCompound();
-					te.getCircuitData().getProperties().setAuthor(player.getCommandSenderName());
+					te.getCircuitData().getProperties().setAuthor(player.getCommandSenderEntity().getName());
 					comp.setTag("circuit", te.getCircuitData().writeToNBT(new NBTTagCompound()));
 					floppy.setTagCompound(comp);
 					te.setInventorySlotContents(0, floppy);
@@ -63,7 +64,7 @@ public class PacketPCBSaveLoad extends PacketTileEntity<PacketPCBSaveLoad> {
 					else
 						te.getCircuitData().clearAllAndSetup(te.getCircuitData().getSize());
 					CommonProxy.networkWrapper.sendToAllAround(new PacketPCBLoad(te.getCircuitData(), xCoord, yCoord,
-							zCoord), new TargetPoint(te.getWorldObj().provider.dimensionId, xCoord, yCoord, zCoord, 8));
+							zCoord), new TargetPoint(te.getWorld().provider.getDimension(), xCoord, yCoord, zCoord, 8));
 				}
 			}
 		}

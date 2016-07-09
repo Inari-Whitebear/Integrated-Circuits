@@ -6,40 +6,47 @@ import moe.nightfall.vic.integratedcircuits.client.Resources;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
-import net.minecraft.client.renderer.texture.IIconRegister;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.IIcon;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.util.EnumFacing;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class BlockAssembler extends BlockContainer {
 	public BlockAssembler() {
-		super(Material.iron);
-		setBlockName(Constants.MOD_ID + ".assembler");
+		super(Material.IRON);
+		setUnlocalizedName(Constants.MOD_ID + ".assembler");
+		setRegistryName("assembler");
 		setCreativeTab(IntegratedCircuits.creativeTab);
 		setHardness(2F);
 	}
 
 	@Override
-	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int par6, float par7,
-			float par8, float par9) {
+	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, ItemStack item, EnumFacing side, float p_onBlockActivated_8_, float p_onBlockActivated_9_, float p_onBlockActivated_10_) { // Are the last three args (float hitX, float hitY, float hitZ)?
 		if (!world.isRemote)
-			player.openGui(IntegratedCircuits.instance, 1, world, x, y, z);
-		return true;
+			player.openGui(IntegratedCircuits.instance, 1, world, pos.getX(), pos.getY(), pos.getZ());
+		return false;
 	}
-
+	
 	@Override
 	public TileEntity createNewTileEntity(World world, int meta) {
 		return new TileEntityAssembler();
 	}
 
+	@Override
+	public boolean hasTileEntity(IBlockState state) {
+		return true;
+	}
+
+	/*
 	@Override
 	@SideOnly(Side.CLIENT)
 	public IIcon getIcon(int side, int meta) {
@@ -70,65 +77,65 @@ public class BlockAssembler extends BlockContainer {
 			return Resources.ICON_ASSEMBLER_BACK;
 		else
 			return Resources.ICON_ASSEMBLER_SIDE;
-	}
+	}*/
 
 	@Override
-	public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase entity, ItemStack stack) {
+	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase entity, ItemStack stack) {
 		int rotation = MathHelper.floor_double((double) (entity.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
-		TileEntityAssembler te = (TileEntityAssembler) world.getTileEntity(x, y, z);
+		TileEntityAssembler te = (TileEntityAssembler) world.getTileEntity(pos);
 		if (te != null)
-			te.rotation = rotation;
+			te.rotation.rotateAround(EnumFacing.Axis.Y);
 	}
 
 	@Override
-	public void onBlockPreDestroy(World world, int x, int y, int z, int meta) {
-		TileEntityAssembler te = (TileEntityAssembler) world.getTileEntity(x, y, z);
+	public void breakBlock(World world, BlockPos pos, IBlockState state) {
+		TileEntityAssembler te = (TileEntityAssembler) world.getTileEntity(pos);
 		te.dropContents();
 	}
 
 	@Override
-	public void onNeighborBlockChange(World world, int x, int y, int z, Block block) {
-		TileEntityAssembler te = (TileEntityAssembler) world.getTileEntity(x, y, z);
+	public void onNeighborBlockChange(World world, BlockPos pos, IBlockState state, Block block) {
+		TileEntityAssembler te = (TileEntityAssembler) world.getTileEntity(pos);
 		te.onNeighborBlockChange();
 	}
 
 	@Override
-	public int isProvidingWeakPower(IBlockAccess world, int x, int y, int z, int meta) {
-		return isProvidingStrongPower(world, x, y, z, meta);
+	public int getWeakPower(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side) {
+		return getStrongPower(state, world, pos, side);
 	}
 
 	@Override
-	public int isProvidingStrongPower(IBlockAccess world, int x, int y, int z, int meta) {
-		TileEntityAssembler te = (TileEntityAssembler) world.getTileEntity(x, y, z);
+	public int getStrongPower(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side) {
+		TileEntityAssembler te = (TileEntityAssembler) world.getTileEntity(pos);
 		return te.isProvidingPower();
 	}
 
 	@Override
-	public boolean isSideSolid(IBlockAccess world, int x, int y, int z, ForgeDirection side) {
+	public boolean isSideSolid(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side) {
 		return true;
 	}
 
 	@Override
-	public boolean canProvidePower() {
+	public boolean canProvidePower(IBlockState blockState) {
 		return true;
 	}
 
 	@Override
-	public boolean canConnectRedstone(IBlockAccess world, int x, int y, int z, int side) {
-		return side != -1;
+	public boolean canConnectRedstone(IBlockState blockState, IBlockAccess world, BlockPos pos, EnumFacing side) {
+		return side != EnumFacing.DOWN;
 	}
 
 	@Override
-	public boolean rotateBlock(World world, int x, int y, int z, ForgeDirection axis) {
-		return ((TileEntityAssembler) world.getTileEntity(x, y, z)).rotate();
+	public boolean rotateBlock(World world, BlockPos pos, EnumFacing axis) {
+		return ((TileEntityAssembler) world.getTileEntity(pos)).rotate();
 	}
 
 	@Override
-	public boolean isOpaqueCube() {
+	public boolean isOpaqueCube(IBlockState state) {
 		return false;
 	}
-
+/*
 	@Override
 	public void registerBlockIcons(IIconRegister p_149651_1_) {
-	}
+	}*/
 }

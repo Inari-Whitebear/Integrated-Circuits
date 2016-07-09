@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import cpw.mods.fml.client.config.GuiConfig;
-import cpw.mods.fml.client.config.IConfigElement;
+import net.minecraft.util.text.translation.I18n;
+import net.minecraftforge.fml.client.config.GuiConfig;
+import net.minecraftforge.fml.client.config.IConfigElement;
 import moe.nightfall.vic.integratedcircuits.Config;
 import moe.nightfall.vic.integratedcircuits.Constants;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.util.StatCollector;
 import net.minecraftforge.common.config.ConfigElement;
 import net.minecraftforge.common.config.Configuration;
 
@@ -24,7 +24,7 @@ public class IntegratedCircuitsGuiConfig extends GuiConfig
                 false,
                 false,
                 getAbridgedConfigPath(Config.config.toString()),
-                StatCollector.translateToLocal("gui.integratedcircuits.config.titleline2"));
+                I18n.translateToLocal("gui.integratedcircuits.config.titleline2"));
     }
 
     public static List<IConfigElement> getConfigElements()

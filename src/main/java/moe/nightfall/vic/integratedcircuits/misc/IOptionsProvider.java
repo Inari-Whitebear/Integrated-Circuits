@@ -26,9 +26,9 @@ public interface IOptionsProvider {
 		}
 
 		public void changeSetting(int setting, int par) {
-			if (parent.getWorldObj().isRemote)
-				CommonProxy.networkWrapper.sendToServer(new PacketChangeSetting(parent.xCoord, parent.yCoord,
-						parent.zCoord, setting, par));
+			if (parent.getWorld().isRemote)
+				CommonProxy.networkWrapper.sendToServer(new PacketChangeSetting(parent.getPos().getX(), parent.getPos().getY(),
+						parent.getPos().getZ(), setting, par));
 			else
 				changeSettingPayload(setting, par);
 		}

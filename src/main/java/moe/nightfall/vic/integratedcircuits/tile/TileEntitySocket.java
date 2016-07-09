@@ -10,12 +10,15 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ITickable;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import codechicken.lib.data.MCDataOutput;
 import codechicken.lib.vec.BlockCoord;
 
-public class TileEntitySocket extends TileEntity implements ISocketWrapper {
+public class TileEntitySocket extends TileEntity implements ISocketWrapper, ITickable {
 	public ISocket socket = IntegratedCircuitsAPI.getGateRegistry().createSocketInstance(this);
 
 	public boolean isDestroyed;
@@ -26,7 +29,7 @@ public class TileEntitySocket extends TileEntity implements ISocketWrapper {
 	}
 
 	@Override
-	public void updateEntity() {
+	public void update() {
 		socket.update();
 	}
 
@@ -46,12 +49,12 @@ public class TileEntitySocket extends TileEntity implements ISocketWrapper {
 	public Packet getDescriptionPacket() {
 		NBTTagCompound comp = new NBTTagCompound();
 		socket.writeDesc(comp);
-		return new S35PacketUpdateTileEntity(xCoord, yCoord, zCoord, blockMetadata, comp);
+		return new SPacketUpdateTileEntity(pos, blockMetadata, comp);
 	}
 
 	@Override
-	public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity pkt) {
-		NBTTagCompound comp = pkt.func_148857_g();
+	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+		NBTTagCompound comp = pkt.getNbtCompound();
 		socket.readDesc(comp);
 	}
 
@@ -68,25 +71,25 @@ public class TileEntitySocket extends TileEntity implements ISocketWrapper {
 	@Override
 	public void notifyBlocksAndChanges() {
 		markDirty();
-		worldObj.notifyBlocksOfNeighborChange(xCoord, yCoord, zCoord, getBlockType());
+		worldObj.notifyNeighborsOfStateChange(pos, getBlockType());
 	}
 
 	@Override
 	public void notifyPartChange() {
 		markDirty();
-		worldObj.notifyBlockChange(xCoord, yCoord, zCoord, getBlockType());
+		worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 0); // FIXME states, flags, is this the rigth function?
 	}
 
 	@Override
-	public BlockCoord getPos() {
-		return new BlockCoord(xCoord, yCoord, zCoord);
-	}
+	public BlockPos getPos() {
+		return new BlockPos(pos);
+	} // TODO does this have to make a new one?
 
 	@Override
 	public void destroy() {
-		MiscUtils.dropItem(worldObj, new ItemStack(Content.itemSocket), xCoord, yCoord, zCoord);
+		MiscUtils.dropItem(worldObj, new ItemStack(Content.itemSocket), pos.getX(), pos.getY(), pos.getZ());
 		isDestroyed = true;
-		worldObj.setBlockToAir(xCoord, yCoord, zCoord);
+		worldObj.setBlockToAir(pos);
 	}
 
 	@Override
@@ -101,7 +104,7 @@ public class TileEntitySocket extends TileEntity implements ISocketWrapper {
 
 	@Override
 	public void scheduleTick(int delay) {
-		worldObj.scheduleBlockUpdate(xCoord, yCoord, zCoord, getBlockType(), delay);
+		worldObj.scheduleBlockUpdate(pos, getBlockType(), delay, 0);// TODO check priority
 	}
 
 	@Override
@@ -111,7 +114,7 @@ public class TileEntitySocket extends TileEntity implements ISocketWrapper {
 
 	@Override
 	public void sendDescription() {
-		worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+		worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 0); // FIXME flags, states
 	}
 
 	@Override

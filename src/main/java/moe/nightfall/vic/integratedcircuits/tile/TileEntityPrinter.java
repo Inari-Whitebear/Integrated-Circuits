@@ -56,7 +56,7 @@ public class TileEntityPrinter extends TileEntityContainer {
 
 	public boolean addInk(ItemStack stack) {
 		// TODO If you ever need this again, move it to the utility functions
-		if (inkLevel < 1F && stack != null && stack.getItem() == Items.dye && stack.getItemDamage() == 0) {
+		if (inkLevel < 1F && stack != null && stack.getItem() == Items.DYE && stack.getItemDamage() == 0) {
 			inkLevel += 0.2F;
 			inkLevel = Math.min(inkLevel, 1F);
 			stack.stackSize--;
@@ -69,9 +69,9 @@ public class TileEntityPrinter extends TileEntityContainer {
 
 	public boolean addPaper(ItemStack stack) {
 		// TODO Same as above
-		if (stack != null && stack.getItem() == Items.paper && paperCount() < 16) {
+		if (stack != null && stack.getItem() == Items.PAPER && paperCount() < 16) {
 			if (paperStack == null) {
-				paperStack = new ItemStack(Items.paper);
+				paperStack = new ItemStack(Items.PAPER);
 				paperStack.stackSize = stack.stackSize;
 			} else {
 				paperStack.stackSize += stack.stackSize;
@@ -99,7 +99,7 @@ public class TileEntityPrinter extends TileEntityContainer {
 
 	@Override
 	public boolean isItemValidForSlot(int id, ItemStack stack) {
-		return id == 0 && stack != null && stack.getItem() == Items.paper ? true : false;
+		return id == 0 && stack != null && stack.getItem() == Items.PAPER ? true : false;
 	}
 
 	public void print(CircuitData cdata) {
@@ -107,8 +107,8 @@ public class TileEntityPrinter extends TileEntityContainer {
 			paperStack.stackSize--;
 			inkLevel -= 0.1F;
 			markDirty();
-			MiscUtils.dropItem(worldObj, ItemPCBPrint.create(cdata), xCoord, yCoord, zCoord);
-			worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+			MiscUtils.dropItem(worldObj, ItemPCBPrint.create(cdata), pos.getX(), pos.getY(), pos.getZ());
+			worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 0); //FIXME states, flags
 		}
 	}
 }

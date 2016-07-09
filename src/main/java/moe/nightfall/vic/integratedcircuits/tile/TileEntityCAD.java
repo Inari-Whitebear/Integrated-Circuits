@@ -1,9 +1,10 @@
 package moe.nightfall.vic.integratedcircuits.tile;
 
 import codechicken.lib.vec.BlockCoord;
-import cpw.mods.fml.common.network.NetworkRegistry.TargetPoint;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.util.EnumFacing;
+import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import moe.nightfall.vic.integratedcircuits.Content;
 import moe.nightfall.vic.integratedcircuits.DiskDrive.IDiskDrive;
 import moe.nightfall.vic.integratedcircuits.api.gate.ISocket.EnumConnectionType;
@@ -22,7 +23,6 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.AxisAlignedBB;
-import net.minecraftforge.common.util.ForgeDirection;
 
 public class TileEntityCAD extends TileEntityContainer implements ICircuit, IDiskDrive {
 	private ItemStack floppyStack;
@@ -43,7 +43,7 @@ public class TileEntityCAD extends TileEntityContainer implements ICircuit, IDis
 	private boolean step = false;
 
 	// Shows if there is a printer connected
-	private ForgeDirection printerLocation;
+	private EnumFacing printerLocation;
 
 	public boolean isPausing() {
 		return pausing;
@@ -115,21 +115,21 @@ public class TileEntityCAD extends TileEntityContainer implements ICircuit, IDis
 		compound.setTag("floppyStack", stackCompound);
 	}
 
-	public final boolean getExternalInputFromSide(ForgeDirection dir, int frequency) {
+	public final boolean getExternalInputFromSide(EnumFacing side, int frequency) {
 		return (in[MiscUtils.getSide(dir)] & 1 << frequency) != 0;
 	}
 
 	@Override
-	public boolean getInputFromSide(ForgeDirection dir, int frequency) {
+	public boolean getInputFromSide(EnumFacing dir, int frequency) {
 		return getExternalInputFromSide(dir, frequency) && !getOutputToSide(dir, frequency);
 	}
 
-	public boolean getOutputToSide(ForgeDirection dir, int frequency) {
+	public boolean getOutputToSide(EnumFacing dir, int frequency) {
 		return (out[MiscUtils.getSide(dir)] & 1 << frequency) != 0;
 	}
 
 	@SideOnly(Side.CLIENT)
-	public final void setExternalInputFromSide(ForgeDirection dir, int frequency, boolean output) {
+	public final void setExternalInputFromSide(EnumFacing dir, int frequency, boolean output) {
 		EnumConnectionType mode = circuitData.getProperties().getModeAtSide(MiscUtils.getSide(dir));
 		if (mode != EnumConnectionType.SIMPLE || frequency == 0) {
 			int[] i = this.in.clone();
@@ -157,7 +157,7 @@ public class TileEntityCAD extends TileEntityContainer implements ICircuit, IDis
 	}
 
 	@Override
-	public void setOutputToSide(ForgeDirection dir, int frequency, boolean output) {
+	public void setOutputToSide(EnumFacing dir, int frequency, boolean output) {
 		if (output)
 			out[MiscUtils.getSide(dir)] |= 1 << frequency;
 		else
@@ -170,7 +170,7 @@ public class TileEntityCAD extends TileEntityContainer implements ICircuit, IDis
 		if (id == 1) {
 			if (worldObj.isRemote) {
 				// Update GUI
-				printerLocation = ForgeDirection.getOrientation(par);
+				printerLocation = EnumFacing.getOrientation(par);
 				GuiScreen gui = Minecraft.getMinecraft().currentScreen;
 				if (gui instanceof GuiCAD) {
 					((GuiCAD) gui).refreshPrinter();
@@ -184,9 +184,9 @@ public class TileEntityCAD extends TileEntityContainer implements ICircuit, IDis
 
 	public void onNeighborBlockChange() {
 		BlockCoord bc = new BlockCoord(this);
-		ForgeDirection oldPrinterLocation = printerLocation;
-		printerLocation = ForgeDirection.UNKNOWN;
-		for (ForgeDirection fd : ForgeDirection.VALID_DIRECTIONS) {
+		EnumFacing oldPrinterLocation = printerLocation;
+		printerLocation = EnumFacing.UNKNOWN;
+		for (EnumFacing fd : EnumFacing.VALID_DIRECTIONS) {
 			BlockCoord bcs = bc.offset(fd.ordinal());
 			if (worldObj.getBlock(bcs.x, bcs.y, bcs.z) == Content.blockPrinter) {
 				printerLocation = fd;
@@ -197,7 +197,7 @@ public class TileEntityCAD extends TileEntityContainer implements ICircuit, IDis
 		}
 	}
 
-	public ForgeDirection printerLocation() {
+	public EnumFacing printerLocation() {
 		if (printerLocation == null) {
 			onNeighborBlockChange();
 		}
@@ -205,7 +205,7 @@ public class TileEntityCAD extends TileEntityContainer implements ICircuit, IDis
 	}
 
 	public boolean isPrinterConnected() {
-		return printerLocation() != ForgeDirection.UNKNOWN;
+		return printerLocation() != EnumFacing.UNKNOWN;
 	}
 
 	@Override

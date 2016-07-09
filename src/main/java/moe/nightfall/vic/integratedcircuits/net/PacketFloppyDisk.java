@@ -8,7 +8,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
-import cpw.mods.fml.relauncher.Side;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class PacketFloppyDisk extends PacketTileEntity<PacketFloppyDisk> {
 	private ItemStack stack;
@@ -38,7 +39,7 @@ public class PacketFloppyDisk extends PacketTileEntity<PacketFloppyDisk> {
 
 	@Override
 	public void process(EntityPlayer player, Side side) {
-		TileEntity te = player.worldObj.getTileEntity(xCoord, yCoord, zCoord);
+		TileEntity te = player.worldObj.getTileEntity(new BlockPos(xCoord, yCoord, zCoord));
 		if (te == null || !(te instanceof IDiskDrive))
 			return;
 		IDiskDrive dd = (IDiskDrive) te;

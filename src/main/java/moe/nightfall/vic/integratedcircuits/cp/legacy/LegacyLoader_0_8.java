@@ -1,18 +1,10 @@
 package moe.nightfall.vic.integratedcircuits.cp.legacy;
 
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import moe.nightfall.vic.integratedcircuits.cp.CircuitData;
-import moe.nightfall.vic.integratedcircuits.cp.legacy.LegacyLoader;
 import moe.nightfall.vic.integratedcircuits.misc.MiscUtils;
-import moe.nightfall.vic.integratedcircuits.misc.Vec2;
+import moe.nightfall.vic.integratedcircuits.misc.Vec2i;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraft.util.EnumFacing;
 
 public final class LegacyLoader_0_8 extends LegacyLoader {
 	@Override
@@ -77,7 +69,7 @@ public final class LegacyLoader_0_8 extends LegacyLoader {
 		}
 
 		@Override
-		public void postTransform(Vec2 pos, CircuitData cdata) {
+		public void postTransform(Vec2i pos, CircuitData cdata) {
 			// Schedule input updates for the whole circuit, to eliminate glitches.
 			cdata.scheduleInputChange(pos);
 
@@ -85,7 +77,7 @@ public final class LegacyLoader_0_8 extends LegacyLoader {
 			cdata.scheduleTick(pos);
 		}
 
-		protected final boolean getInput(ForgeDirection side) {
+		protected final boolean getInput(EnumFacing side) {
 			return (getInt(oldInput) << (side.ordinal() - 2) & 8) != 0;
 		}
 	}
@@ -107,7 +99,7 @@ public final class LegacyLoader_0_8 extends LegacyLoader {
 			setInt(newRotation, getInt(oldRotation));
 		}
 
-		protected final boolean getRotatedInput(ForgeDirection side) {
+		protected final boolean getRotatedInput(EnumFacing side) {
 			// TODO: This should not break in future, right?
 			return getInput(MiscUtils.rotn(side, getInt(oldRotation)));
 		}
@@ -215,8 +207,8 @@ public final class LegacyLoader_0_8 extends LegacyLoader {
 			setInt(newCurrentDelay, 0);
 			
 			// Store current input as "old" (used for edge detection).
-			setBit(newOldEast, getRotatedInput(ForgeDirection.EAST));
-			setBit(newOldWest, getRotatedInput(ForgeDirection.WEST));
+			setBit(newOldEast, getRotatedInput(EnumFacing.EAST));
+			setBit(newOldWest, getRotatedInput(EnumFacing.WEST));
 		}
 	}
 
@@ -234,8 +226,8 @@ public final class LegacyLoader_0_8 extends LegacyLoader {
 			setBit(newOut, getBit(oldOut));
 			
 			// Store current input as "old" (used for edge detection).
-			setBit(newOldNorth, getRotatedInput(ForgeDirection.NORTH));
-			setBit(newOldSouth, getRotatedInput(ForgeDirection.SOUTH));
+			setBit(newOldNorth, getRotatedInput(EnumFacing.NORTH));
+			setBit(newOldSouth, getRotatedInput(EnumFacing.SOUTH));
 		}
 	}
 
@@ -260,7 +252,7 @@ public final class LegacyLoader_0_8 extends LegacyLoader {
 		@Override
 		public void transformImpl() {
 			super.transformImpl();
-			setBit(newOldIn, getRotatedInput(ForgeDirection.SOUTH));
+			setBit(newOldIn, getRotatedInput(EnumFacing.SOUTH));
 		}
 
 		@Override
@@ -353,7 +345,7 @@ public final class LegacyLoader_0_8 extends LegacyLoader {
 		public void transformImpl() {
 			super.transformImpl();
 			setInt(newDelay, getInt(oldDelay));
-			if (getRotatedInput(ForgeDirection.SOUTH)) {
+			if (getRotatedInput(EnumFacing.SOUTH)) {
 				// Fix possibly invalid state
 				setBit(newOutWest, true);
 				setBit(newOutNorth, false);

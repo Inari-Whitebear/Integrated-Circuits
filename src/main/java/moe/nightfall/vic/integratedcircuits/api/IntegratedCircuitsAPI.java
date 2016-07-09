@@ -3,6 +3,8 @@ package moe.nightfall.vic.integratedcircuits.api;
 import moe.nightfall.vic.integratedcircuits.api.gate.IGateRegistry;
 import moe.nightfall.vic.integratedcircuits.api.gate.ISocket;
 import moe.nightfall.vic.integratedcircuits.api.gate.ISocketProvider;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import codechicken.lib.data.MCDataOutput;
 import codechicken.lib.vec.BlockCoord;
@@ -33,7 +35,7 @@ public class IntegratedCircuitsAPI {
 		return instance;
 	}
 
-	public static ISocket getSocketAt(World world, BlockCoord pos, int side) {
+	public static ISocket getSocketAt(World world, BlockPos pos, EnumFacing side) {
 		return getInstance().getSocketAt(world, pos, side);
 	}
 
@@ -41,7 +43,7 @@ public class IntegratedCircuitsAPI {
 		getInstance().registerSocketProvider(provider);
 	}
 
-	public static MCDataOutput getWriteStream(World world, BlockCoord pos, int side) {
+	public static MCDataOutput getWriteStream(World world, BlockPos pos, EnumFacing side) {
 		return getInstance().getWriteStream(world, pos, side);
 	}
 
@@ -49,11 +51,11 @@ public class IntegratedCircuitsAPI {
 		return getInstance().getGateRegistry();
 	}
 
-	public static int updateRedstoneInput(ISocket socket, int side) {
+	public static int updateRedstoneInput(ISocket socket, EnumFacing side) {
 		return getInstance().updateRedstoneInput(socket, side);
 	}
 
-	public static byte[] updateBundledInput(ISocket socket, int side) {
+	public static byte[] updateBundledInput(ISocket socket, EnumFacing side) {
 		return getInstance().updateBundledInput(socket, side);
 	}
 }

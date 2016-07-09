@@ -5,9 +5,12 @@ import moe.nightfall.vic.integratedcircuits.misc.MiscUtils;
 import moe.nightfall.vic.integratedcircuits.tile.TileEntitySocket;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import codechicken.lib.vec.BlockCoord;
-import codechicken.lib.vec.Vector3;
 
 public class ItemSocket extends ItemBase {
 	public ItemSocket() {
@@ -16,23 +19,29 @@ public class ItemSocket extends ItemBase {
 	}
 
 	@Override
-	public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ) {
-		BlockCoord pos = new BlockCoord(x, y, z);
-		Vector3 vhit = new Vector3(hitX, hitY, hitZ);
-		pos.offset(side);
-		return place(stack, player, world, pos, side, vhit);
+	public EnumActionResult onItemUse(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+		Vec3d vhit = new Vec3d(hitX, hitY, hitZ);
+		pos.offset(facing);
+		if (place(stack, player, world, pos, facing, vhit)) {
+			return EnumActionResult.SUCCESS;
+		}
+		else
+		{
+			return EnumActionResult.FAIL;
+		}
 	}
 
-	private boolean place(ItemStack stack, EntityPlayer player, World world, BlockCoord pos, int side, Vector3 vhit) {
-		BlockCoord pos2 = pos.copy().offset(side ^ 1);
-		if (!MiscUtils.canPlaceGateOnSide(world, pos2.x, pos2.y, pos2.z, side))
+	private boolean place(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumFacing side, Vec3d vhit) {
+		BlockPos pos2 = new BlockPos(pos);
+		pos2.offset(side.getOpposite()); // is side ^ 1 the same as get opposite?
+		if (!MiscUtils.canPlaceGateOnSide(world, pos2, side))
 			return false;
 
-		if (world.getBlock(pos.x, pos.y, pos.z).isReplaceable(world, pos.x, pos.y, pos.z)) {
-			world.setBlock(pos.x, pos.y, pos.z, Content.blockSocket);
-			TileEntitySocket te = (TileEntitySocket) world.getTileEntity(pos.x, pos.y, pos.z);
+		if (world.getBlockState(pos).getBlock().isReplaceable(world, pos)) {
+			world.setBlockState(pos, Content.blockSocket.getDefaultState());
+			TileEntitySocket te = (TileEntitySocket) world.getTileEntity(pos);
 			te.getSocket().preparePlacement(player, pos2, side, stack);
-			MiscUtils.playPlaceSound(world, pos);
+			MiscUtils.playPlaceSound(player, world, pos);
 
 			if (!player.capabilities.isCreativeMode)
 				stack.stackSize--;

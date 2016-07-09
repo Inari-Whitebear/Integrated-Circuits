@@ -10,7 +10,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
-import cpw.mods.fml.relauncher.Side;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class PacketPCBLoad extends PacketTileEntity<PacketPCBLoad> {
 	private CircuitData data;
@@ -38,7 +39,7 @@ public class PacketPCBLoad extends PacketTileEntity<PacketPCBLoad> {
 
 	@Override
 	public void process(EntityPlayer player, Side side) {
-		TileEntityCAD layout = (TileEntityCAD) player.worldObj.getTileEntity(xCoord, yCoord, zCoord);
+		TileEntityCAD layout = (TileEntityCAD) player.worldObj.getTileEntity(new BlockPos(xCoord, yCoord, zCoord));
 		if (layout != null) {
 			data.setParent(layout);
 			layout.setCircuitData(data);

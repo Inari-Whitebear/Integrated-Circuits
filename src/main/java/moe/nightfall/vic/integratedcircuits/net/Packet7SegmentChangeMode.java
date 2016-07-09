@@ -9,8 +9,8 @@ import moe.nightfall.vic.integratedcircuits.proxy.CommonProxy;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.PacketBuffer;
-import cpw.mods.fml.common.network.NetworkRegistry.TargetPoint;
-import cpw.mods.fml.relauncher.Side;
+import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class Packet7SegmentChangeMode extends PacketGate<Packet7SegmentChangeMode> {
 	private int mode;
@@ -64,7 +64,7 @@ public class Packet7SegmentChangeMode extends PacketGate<Packet7SegmentChangeMod
 			part.getProvider().updateInput();
 
 			CommonProxy.networkWrapper.sendToAllAround(this, new TargetPoint(
-					part.getProvider().getWorld().provider.dimensionId, xCoord, yCoord, zCoord, 8));
+					part.getProvider().getWorld().provider.getDimension(), xCoord, yCoord, zCoord, 8));
 		} else {
 			part.isSlave = isSlave;
 			if (!isSlave && mode != part.mode) {
