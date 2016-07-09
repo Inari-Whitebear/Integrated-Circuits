@@ -1,21 +1,21 @@
 package moe.nightfall.vic.integratedcircuits;
 
-import codechicken.microblock.ItemMicroPart;
-import mcmultipart.item.ItemMultiPart;
-import net.minecraftforge.fml.common.registry.GameData;
+//import mcmultipart.item.ItemMultiPart;
+//import net.minecraftforge.fml.common.registry.GameData;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import moe.nightfall.vic.integratedcircuits.item.recipe.RecipeCircuit;
 import moe.nightfall.vic.integratedcircuits.item.recipe.RecipeDyeable;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
-import net.minecraft.item.Item;
+//import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
-import net.minecraftforge.oredict.ShapedOreRecipe;
+//import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
 
 public class Recipes {
 	public static void loadRecipes() {
+		/*
 		// Oredict
 		Item bpSilicon = GameData.getItemRegistry().getObject("bluepower:silicon_wafer");
 		if (bpSilicon != null)
@@ -24,8 +24,9 @@ public class Recipes {
 		Item prCorePart = GameData.getItemRegistry().getObject("ProjRed|Core:projectred.core.part");
 		if (prCorePart != null)
 			OreDictionary.registerOre("silicon", new ItemStack(prCorePart, 1, 12));
+			*/
 
-		if (!(IntegratedCircuits.isPRLoaded || IntegratedCircuits.isBPLoaded)) {
+		//if (!(IntegratedCircuits.isPRLoaded || IntegratedCircuits.isBPLoaded)) {
 			OreDictionary.registerOre("silicon", Content.itemSilicon);
 
 			GameRegistry.addRecipe(new ItemStack(Content.itemCoalCompound),
@@ -48,7 +49,8 @@ public class Recipes {
 
 			GameRegistry.addSmelting(Content.itemCoalCompound, new ItemStack(Content.itemSilicon,
 					8), 0.5F);
-		} else {
+		/*} else {
+			
 			Item bpStoneWafer = GameData.getItemRegistry().getObject("bluepower:stone_tile");
 			if (bpStoneWafer != null)
 				OreDictionary.registerOre("stoneWafer", bpStoneWafer);
@@ -56,11 +58,14 @@ public class Recipes {
 			Item bpStoneWire = GameData.getItemRegistry().getObject("bluepower:redstone_wire_tile");
 			if (bpStoneWire != null)
 				OreDictionary.registerOre("stoneWire", bpStoneWire);
+			
 
+			
 			if (prCorePart != null) {
 				OreDictionary.registerOre("stoneWafer", new ItemStack(prCorePart, 1, 0));
 				OreDictionary.registerOre("stoneWire", new ItemStack(prCorePart, 1, 2));
 			}
+			
 
 			GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(Content.item7Segment),
 					"srs",
@@ -71,7 +76,7 @@ public class Recipes {
 					's', "stoneWafer",
 					'#', Blocks.GLASS_PANE,
 					'p', Content.itemPCBChip));
-		}
+		}*/
 
 		GameRegistry.addRecipe(new ShapelessOreRecipe(new ItemStack(Content.itemSiliconDrop, 8), "silicon"));
 
@@ -176,6 +181,7 @@ public class Recipes {
 				'r', Items.REDSTONE,
 				'#', Blocks.STONE_SLAB);
 
+		/*
 		if (IntegratedCircuits.isMCMPLoaded) {
 
 			GameRegistry.addRecipe(new ItemStack(Content.itemSocketFMP),
@@ -185,7 +191,7 @@ public class Recipes {
 					'i', Content.itemSiliconDrop,
 					'r', Items.REDSTONE,
 					'#', ItemMicroPart.create(1, "tile.stone"));
-		}
+		}*/
 
 		// TODO NEI integration? Rewrite using multiple recipes?
 		GameRegistry.addRecipe(new RecipeDyeable());

@@ -5,7 +5,6 @@ import moe.nightfall.vic.integratedcircuits.api.gate.IGatePeripheralProvider;
 import moe.nightfall.vic.integratedcircuits.api.gate.ISocket.EnumConnectionType;
 import moe.nightfall.vic.integratedcircuits.cp.CircuitData;
 import moe.nightfall.vic.integratedcircuits.cp.ICircuit;
-import moe.nightfall.vic.integratedcircuits.gate.peripheral.CircuitPeripheral;
 import moe.nightfall.vic.integratedcircuits.gate.peripheral.GatePeripheral;
 import moe.nightfall.vic.integratedcircuits.misc.MiscUtils;
 import net.minecraft.entity.player.EntityPlayer;
@@ -20,7 +19,6 @@ public class GateCircuit extends Gate implements ICircuit, IGatePeripheralProvid
 	public CircuitData circuitData;
 
 	private boolean update;
-	private CircuitPeripheral peripheral = new CircuitPeripheral(this);
 
 	@Override
 	public void preparePlacement(EntityPlayer player, ItemStack stack) {
@@ -129,7 +127,7 @@ public class GateCircuit extends Gate implements ICircuit, IGatePeripheralProvid
 	}
 
 	@Override
-	public void setOutputToSide(ForgeDirection dir, int frequency, boolean output) {
+	public void setOutputToSide(EnumFacing dir, int frequency, boolean output) {
 		int side = (MiscUtils.getSide(dir) + 2) % 4;
 		EnumConnectionType mode = getConnectionTypeAtSide(side);
 		if (mode == EnumConnectionType.SIMPLE && frequency > 0)

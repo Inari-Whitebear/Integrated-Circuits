@@ -643,6 +643,7 @@ public class GuiCAD extends GuiContainer implements IGuiCallback, IHoverableHand
 	}
 	
 	private void renderTunnelConnections(CircuitData data, boolean ctrl) {
+		/*
 		Tessellator tes = Tessellator.getInstance();
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
 
@@ -662,6 +663,7 @@ public class GuiCAD extends GuiContainer implements IGuiCallback, IHoverableHand
 			}
 		tes.draw();
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
+		*/
 	}
 
 	private void drawTunnelConnection(int firstX, int firstY) {

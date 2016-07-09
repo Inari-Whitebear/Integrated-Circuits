@@ -13,7 +13,6 @@ import moe.nightfall.vic.integratedcircuits.api.gate.ISocket;
 import moe.nightfall.vic.integratedcircuits.api.gate.ISocketProvider;
 import moe.nightfall.vic.integratedcircuits.api.gate.ISocketWrapper;
 import moe.nightfall.vic.integratedcircuits.compat.BPRedstoneProvider;
-import moe.nightfall.vic.integratedcircuits.compat.NEIAddon;
 import moe.nightfall.vic.integratedcircuits.compat.gateio.GateIO;
 import moe.nightfall.vic.integratedcircuits.cp.CircuitPart;
 import moe.nightfall.vic.integratedcircuits.gate.Gate7Segment;
@@ -21,8 +20,6 @@ import moe.nightfall.vic.integratedcircuits.gate.GateCircuit;
 import moe.nightfall.vic.integratedcircuits.misc.MiscUtils;
 import moe.nightfall.vic.integratedcircuits.proxy.CommonProxy;
 import moe.nightfall.vic.integratedcircuits.tile.BlockSocket;
-import moe.nightfall.vic.integratedcircuits.tile.MCMPartSocket;
-import moe.nightfall.vic.integratedcircuits.tile.PartFactory;
 import moe.nightfall.vic.integratedcircuits.tile.TileEntitySocket;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
@@ -46,9 +43,6 @@ import net.minecraftforge.fml.common.event.FMLInterModComms;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import dan200.computercraft.api.ComputerCraftAPI;
-import dan200.computercraft.api.peripheral.IPeripheralProvider;
-import dan200.computercraft.api.redstone.IBundledRedstoneProvider;
 
 @Mod(modid = "integratedcircuits", dependencies = "required-after:CodeChickenCore; after:ComputerCraft; after:ForgeMultipart@[1.1.2.332,)", guiFactory = "moe.nightfall.vic.integratedcircuits.client.gui.IntegratedCircuitsGuiFactory")
 public class IntegratedCircuits {
@@ -62,8 +56,8 @@ public class IntegratedCircuits {
 	public static boolean isRLLoaded = false;
 	public static boolean isMFRLoaded = false;
 	public static boolean isOCLoaded = false;
-	public static boolean isCCLoaded = false;
-	public static boolean isNEILoaded = false;
+	//public static boolean isCCLoaded = false;
+	//public static boolean isNEILoaded = false;
 	public static boolean isBCLoaded = false;
 
 	// TODO BETTER NAME?
@@ -108,8 +102,8 @@ public class IntegratedCircuits {
 		logger.info("RedLogic: " + (isRLLoaded = Loader.isModLoaded("RedLogic")));
 		logger.info("MineFactoryReloaded: " + (isMFRLoaded = Loader.isModLoaded("MineFactoryReloaded")));
 		logger.info("Open Computers: " + (isOCLoaded = Loader.isModLoaded("OpenComputers")));
-		logger.info("Computer Craft: " + (isCCLoaded = Loader.isModLoaded("ComputerCraft")));
-		logger.info("Not Enough Items: " + (isNEILoaded = Loader.isModLoaded("NotEnoughItems")));
+		//logger.info("Computer Craft: " + (isCCLoaded = Loader.isModLoaded("ComputerCraft")));
+		//logger.info("Not Enough Items: " + (isNEILoaded = Loader.isModLoaded("NotEnoughItems")));
 		logger.info("BuildCraft: " + (isBCLoaded = Loader.isModLoaded("BuildCraft|Core")));
 		logger.info("Searching for compatible APIs");
 		logger.info("BuildCraft Tools API: " + (isBCToolsAPIThere = ModAPIManager.INSTANCE.hasAPI("BuildCraftAPI|tools")));
@@ -190,20 +184,14 @@ public class IntegratedCircuits {
 		GameRegistry.register(Content.blockSocket);
 		GameRegistry.registerTileEntity(TileEntitySocket.class, Constants.MOD_ID + ".socket");
 
-		if (isMCMPLoaded) {
-			PartFactory.register(Constants.MOD_ID + ".socket_mcmp", MCMPartSocket.class);
-			PartFactory.initialize();
-		}
-
+		/*
 		if (isCCLoaded) {
 			ComputerCraftAPI.registerBundledRedstoneProvider((IBundledRedstoneProvider) Content.blockSocket);
 			ComputerCraftAPI.registerPeripheralProvider((IPeripheralProvider) Content.blockSocket);
 		}
+		*/
 
 		proxy.initialize();
-
-		if (isNEILoaded && !MiscUtils.isServer())
-			new NEIAddon().initialize();
 
 		FMLInterModComms.sendMessage("Waila", "register", "moe.nightfall.vic.integratedcircuits.compat.WailaAddon.registerAddon");
 	}

@@ -5,6 +5,7 @@ package moe.nightfall.vic.integratedcircuits.tile;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.fml.common.Optional.Interface;
 import net.minecraftforge.fml.common.Optional.InterfaceList;
 import moe.nightfall.vic.integratedcircuits.Content;
@@ -286,11 +287,6 @@ public class TileEntityAssembler extends TileEntityContainer implements IDiskDri
 	}
 
 	@Override
-	public ItemStack getStackInSlotOnClosing(int id) {
-		return getStackInSlot(id);
-	}
-
-	@Override
 	public void setInventorySlotContents(int id, ItemStack stack) {
 		boolean change = !ItemStack.areItemStacksEqual(contents[id], stack);
 		contents[id] = stack;
@@ -311,12 +307,12 @@ public class TileEntityAssembler extends TileEntityContainer implements IDiskDri
 	}
 
 	@Override
-	public String getInventoryName() {
+	public ITextComponent getDisplayName() {
 		return null;
 	}
 
 	@Override
-	public boolean hasCustomInventoryName() {
+	public boolean hasCustomName() {
 		return false;
 	}
 
