@@ -20,7 +20,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class BlockAssembler extends Block { // Should we use BlockContainer or Block? Note that Vic used BlockContainer in their 1.8 work.
+public class BlockAssembler extends Block {
 	public BlockAssembler() {
 		super(Material.IRON);
 		setUnlocalizedName(Constants.MOD_ID + ".assembler");
@@ -37,7 +37,7 @@ public class BlockAssembler extends Block { // Should we use BlockContainer or B
 	}
 	
 	@Override
-	public TileEntity createNewTileEntity(World world, int meta) {
+	public TileEntity createTileEntity(World world, IBlockState state) {
 		return new TileEntityAssembler();
 	}
 
