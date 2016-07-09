@@ -20,7 +20,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class BlockAssembler extends BlockContainer {
+public class BlockAssembler extends Block { // Should we use BlockContainer or Block? Note that Vic used BlockContainer in their 1.8 work.
 	public BlockAssembler() {
 		super(Material.IRON);
 		setUnlocalizedName(Constants.MOD_ID + ".assembler");
